@@ -55,9 +55,10 @@ def check_list(reddit, submission, stored_posts):
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
         stored_posts.append(submission)
     else:
-        print("Removing {}".format(submission.shortlink))
+        log.info("6-month Rule: Reporting {}".format(submission.shortlink))
         # submission.mod.remove()
-        #reddit.redditor(settings.USER_TO_MESSAGE).message("possible repost", "Please look at [this post]({}) for a possible repost".format(submission.shortlink))
+        reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
+        reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost; if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot v0.1".format(submission.shortlink))
     return stored_posts
 
 def purge_old_links(stored_posts):

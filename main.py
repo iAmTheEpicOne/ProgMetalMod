@@ -36,7 +36,7 @@ if LOG_FILENAME is not None:
 
 # MAIN PROCEDURE
 def run_bot():
-    reddit = praw.Reddit(user_agent='ProgMetalMod Bot 0.1',
+    reddit = praw.Reddit(user_agent='ProgMetalBot 0.1',
                          client_id=os.environ['REDDIT_CLIENT_ID'],
                          client_secret=os.environ['REDDIT_CLIENT_SECRET'],
                          password=os.environ['REDDIT_PASSWORD'],

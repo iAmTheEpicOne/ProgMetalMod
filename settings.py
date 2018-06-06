@@ -1,0 +1,4 @@
+REDDIT_SUBREDDIT = "progmetal"
+MAX_REMEMBER_LIMIT = 180
+MESSAGE_LOCATION = "message.txt"
+USER_TO_MESSAGE = "iAmTheEpicOne"

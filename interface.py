@@ -20,6 +20,10 @@ def check_self(submission):
     # Checks if is a self.post
     return submission.is_self
 
+def check_removed(submission):
+    # Checks if removed
+    return submission.removed
+
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time
     current_date = datetime.datetime.utcfromtimestamp(time.time())
@@ -50,24 +54,30 @@ def update_stored_posts(stored_posts):
             f.write(submission + "\n")
 
 def check_list(reddit, submission, stored_posts):
-    # Check if a submission url is in the list
-    # If it is, remove it from the subreddit
+    # Check if a submission url is in the list:
+    # If it is, report post to mods of subreddit
     # If not, add it to the list
+    # Store submission in stored_posts if not already stored
+    # **Unsure if redundent submissions are added to stored_posts**
     #if check_url(submission.url) not in [check_url(sub.url) for sub in list] or submission in list:
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
         stored_posts.append(submission)
     else:
         print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
         # submission.mod.remove()
+        # submission.shortlink is post in violation
+        # sub.shortlink is original unreposted post
         submission.report("ProgMetalBot - Repost! Repost!")
         reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
-        reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost; if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot v0.1".format(submission.shortlink))
+        reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost of [this post]({}); if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot v0.1".format(submission.shortlink, sub.shortlink))
     return stored_posts
 
 def purge_old_links(stored_posts):
     # Removes links older than settings.MAX_REMEMBER_LIMIT from the queue
     for submission in stored_posts:
         if get_submission_age(submission).days > settings.MAX_REMEMBER_LIMIT:
+            stored_posts.remove(submission)
+        if check_removed(submission):
             stored_posts.remove(submission)
     return stored_posts
 

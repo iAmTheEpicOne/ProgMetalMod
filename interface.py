@@ -9,20 +9,27 @@ import os
 
 
 def check_post(submission):
-    # Checks age and if not self.post
-    return check_age(submission) and not check_self(submission)
+    # True if archived and not self.post
+    return check_archived(submission) and not check_self(submission)
+
+def check_archived(submission):
+    # True if post is archived (>6 months old)
+    return submission.archived
 
 def check_age(submission):
-    # Checks if age is < MAX_REMEMBER_LIMIT
+    # False if age is < MAX_REMEMBER_LIMIT
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
 
 def check_self(submission):
     # Checks if is a self.post
     return submission.is_self
 
+# .json "removed" value isn't available for non-removed posts
 def check_removed(submission):
     # Checks if removed
-    return submission.removed
+    if submission.banned_by is "null":
+        return false
+    else return true
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time
@@ -73,11 +80,9 @@ def check_list(reddit, submission, stored_posts):
     return stored_posts
 
 def purge_old_links(stored_posts):
-    # Removes links older than settings.MAX_REMEMBER_LIMIT from the queue
+    # Removes links archived and removed posts from queue
     for submission in stored_posts:
-        if get_submission_age(submission).days > settings.MAX_REMEMBER_LIMIT:
-            stored_posts.remove(submission)
-        if check_removed(submission):
+        if check_archived(submission) or check_removed(submission):
             stored_posts.remove(submission)
     return stored_posts
 

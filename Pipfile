@@ -7,7 +7,7 @@ name = "pypi"
 
 [packages]
 requests = "*"
+praw = "*"
 
 [requires]
 python_version = "3.6.5"
-praw = "==5.4.0"

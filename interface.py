@@ -29,7 +29,8 @@ def check_removed(submission):
     # Checks if removed
     if submission.banned_by is "null":
         return false
-    else return true
+    else:
+        return true
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time

@@ -57,7 +57,7 @@ def check_list(reddit, submission, stored_posts):
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
         stored_posts.append(submission)
     else:
-        log.info("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
+        print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
         # submission.mod.remove()
         submission.report("ProgMetalBot - Repost! Repost!")
         reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))

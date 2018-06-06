@@ -10,4 +10,4 @@ requests = "*"
 
 [requires]
 python_version = "3.6.5"
-praw==5.4.0
+praw = "5.4.0"

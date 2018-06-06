@@ -38,7 +38,8 @@ def run_bot():
     reddit = praw.Reddit('bot1')
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     
-    stored_links = interface.initialize_link_array(reddit)
+    log.info("Initializing 
+    stored_posts = interface.initialize_link_array(reddit)
     
     log.info("Start bot for subreddit %s", settings.REDDIT_SUBREDDIT)
     
@@ -46,13 +47,11 @@ def run_bot():
         try:
             for submission in subreddit.stream.submissions():
                 # For each submission, check if it is younger than MAX_REMEMBER_LIMIT
-                # print (interface.get_submission_age(submission).days)
-                if interface.check_post(submission) and submission not in stored_links:
-                    #print ("pass 1")
-                    stored_links = interface.purge_old_links(stored_links) # Remove old links
-                    #print ("pass 2")
-                    stored_links = interface.check_list(reddit, submission, stored_links)
-                    #print ("pass 3")
+                if interface.check_post(submission) and submission not in stored_posts:
+                    # Remove links > MAX_REMEMBER_LIMIT
+                    stored_posts = interface.purge_old_links(stored_posts)
+                    stored_posts = interface.check_list(reddit, submission, stored_posts)
+            interface.update_stored_posts(stored_posts)
         # Allows the bot to exit on ^C, all other exceptions are ignored
         except KeyboardInterrupt:
             break

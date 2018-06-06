@@ -5,6 +5,7 @@ import interface
 import settings
 import logging.handlers
 import logging
+import os
 
 
 # The time in seconds the bot should sleep until it checks again.

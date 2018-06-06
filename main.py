@@ -38,11 +38,10 @@ def run_bot():
     reddit = praw.Reddit('bot1')
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     
-    log.info("Initializing 
+    log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
     stored_posts = interface.initialize_link_array(reddit)
     
     log.info("Start bot for subreddit %s", settings.REDDIT_SUBREDDIT)
-    
     while True:
         try:
             for submission in subreddit.stream.submissions():

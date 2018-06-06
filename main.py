@@ -35,7 +35,12 @@ if LOG_FILENAME is not None:
 
 # MAIN PROCEDURE
 def run_bot():
-    reddit = praw.Reddit('bot1')
+    reddit = praw.Reddit(user_agent='ProgMetalMod Bot 0.1',
+                         client_id=os.environ['REDDIT_CLIENT_ID'],
+                         client_secret=os.environ['REDDIT_CLIENT_SECRET'],
+                         password=os.environ['REDDIT_PASSWORD'],
+                         username=os.environ['REDDIT_USERNAME'])
+                         
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     
     log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)

@@ -72,7 +72,7 @@ def get_title(submission, domain, reports):
                 rule_bad_title(submission)
         title = band + " - " + song
     else:
-        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$')
+        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$', submission.title)
         if title is None:
             if reports is 1:
                 rule_bad_title(submission)

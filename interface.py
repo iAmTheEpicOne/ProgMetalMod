@@ -188,6 +188,6 @@ def check_url(url):
 
 def print_info(submission, reports):
     domain = get_domain(submission)
-    title = get_title(submission, domain, reports)
-    print("Link: {}, Domain: {}, Title {}".format(submission, domain, title))
+    title = get_title(submission, domain, reports).Title()
+    print("Link: {}, Domain: {14}, Title: {}".format(submission, domain, title))
     

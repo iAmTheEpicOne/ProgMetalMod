@@ -21,12 +21,12 @@ def check_age(submission):
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
 
 def check_self(submission):
-    # True is post is self.post
+    # True if post is self.post
     return submission.is_self
 
 # .json "removed" value isn't available for non-removed posts
 def check_removed(submission):
-    # True is post is banned_by mod
+    # True if post is banned_by mod
     if submission.banned_by is "null":
         return false
     else:
@@ -37,7 +37,7 @@ def check_provider(submission):
     domains = ["YouTube", "BandCamp", "Spotify", "SoundCloud"]
     #if submission.provider_name in domains:
     #title = submission.title #to make it non-lazy ??
-    print("Link: {}, Provider: {}, Domain: {}".format(submission, submission.provider_name, submission.domain))
+    print("Link: {}, Domain: {}".format(submission, submission.domain))
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time

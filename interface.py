@@ -61,7 +61,7 @@ def get_title(submission, reports):
             # song or band is not in submission title
             #   so title has bad format
             if reports is 1:
-                rule_bad_title(submission)
+                rule_bad_title(reddit, submission)
         title = band + " - " + song
     elif domain is "bandcamp.com":
         description = submission.media.oembed.title
@@ -70,13 +70,13 @@ def get_title(submission, reports):
             # song or band is not in submission title
             #   so title has bad format
             if reports is 1:
-                rule_bad_title(submission)
+                rule_bad_title(reddit, submission)
         title = band + " - " + song
     else:
         title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$', submission.title)
         if title is None:
             if reports is 1:
-                rule_bad_title(submission)
+                rule_bad_title(reddit, submission)
             title = submission.title
         extra = re.search('\s(\(|\[|\|).*(\)|\]|\|)', title)
         if not extra is None:
@@ -102,18 +102,21 @@ getting proper title of youtube and soundcloud links is going to be difficult
                     # song is not in the submission title
                     #   so title has bad format
                     if reports is 1:
-                        rule_bad_title(submission)
+                        rule_bad_title(reddit, submission)
                 extra = re.search('(\(|\[).*?(\)|\])', description)
                 description = description[:extra.start()] + description[extra.end():]
             topic = re.search(" - Topic", author)
             author = author[:topic.start()]
+        description = submission.media.oembed.title
+        
         elif author in submission.title:
-            
+
+
 '''
 
     
 
-def rule_six_month(submission, sub):
+def rule_six_month(reddit, submission, sub):
     print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
     # submission.mod.remove()
     # submission is post in violation
@@ -122,7 +125,7 @@ def rule_six_month(submission, sub):
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
     reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost of [this post]({}); if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot v0.1".format(submission.shortlink, sub.shortlink))
 
-def rule_bad_title(submission):
+def rule_bad_title(reddit, submission):
     print("Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
     # Submission was found to have an incorrect title
     submission.report("ProgMetalBot - Bad Title Format")
@@ -164,10 +167,10 @@ def check_list(reddit, submission, stored_posts):
         stored_posts.append(submission)
     # Check if exact url already exists
     if submission.url in [sub.url for sub in stored_posts]:
-        rule_six_month(submission, sub)
+        rule_six_month(reddit, submission, sub)
     # Check if title already exists
     elif get_title(submission, 0) in [get_title(sub, 0) for sub in stored_posts]:
-        rule_six_month(submission, sub)
+        rule_six_month(reddit, submission, sub)
     # print submission information with reports on
     print_info(submission, 1)
     return stored_posts

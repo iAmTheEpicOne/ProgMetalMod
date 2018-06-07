@@ -36,7 +36,7 @@ def check_provider(submission):
     # Checks provider of link and print provider name
     domains = ["YouTube", "BandCamp", "Spotify", "SoundCloud"]
     #if submission.provider_name in domains:
-    print("Provider: {}".format(submission.provider_name))
+    print("Provider: {}\nDomain: {}".format(submission.provider_name, submission.domain))
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time

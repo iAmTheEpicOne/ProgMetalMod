@@ -78,7 +78,8 @@ def get_title(submission, domain, reports):
                 rule_bad_title(submission)
             title = submission.title
         extra = re.search('\s(\(|\[|\|).*(\)|\]|\|)', title)
-        title = title[:extra.start()] + title[extra.end():]
+        if not extra is None:
+            title = title[:extra.start()] + title[extra.end():]
     return title.encode('utf-8')
 '''
 getting proper title of youtube and soundcloud links is going to be difficult
@@ -101,10 +102,10 @@ getting proper title of youtube and soundcloud links is going to be difficult
                     #   so title has bad format
                     if reports is 1:
                         rule_bad_title(submission)
-                extras = re.search('(\(|\[).*?(\)|\])', description)
-                description = description[:extras.start()] + description[extras.end():]
+                extra = re.search('(\(|\[).*?(\)|\])', description)
+                description = description[:extra.start()] + description[extra.end():]
             topic = re.search(" - Topic", author)
-            author = author[:topic.start()]\
+            author = author[:topic.start()]
         elif author in submission.title:
             
 '''

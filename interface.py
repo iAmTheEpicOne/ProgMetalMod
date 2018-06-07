@@ -39,7 +39,7 @@ def check_domain(submission):
     name = re.search(r'(spotify.com|bandcamp.com|soundcloud.com|youtube.com|youtu.be)', submission.domain)
     #if submission.domain in domains:
     #title = submission.title #to make it non-lazy ??
-    print("Link: {}, Domain: {}".format(submission, name))
+    print("Link: {}, Domain: {}".format(submission, name.group(0)))
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time

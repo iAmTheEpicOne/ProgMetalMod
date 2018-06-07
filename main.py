@@ -51,6 +51,7 @@ def run_bot():
     log.info("Start bot for subreddit %s", settings.REDDIT_SUBREDDIT)
     while True:
         try:
+            log.info("Reading stream of submissions for subreddit %s", settings.REDDIT_SUBREDDIT)
             for submission in subreddit.stream.submissions():
                 # For each submission, check if it is younger than MAX_REMEMBER_LIMIT
                 #print(submission.title) # to make it non-lazy
@@ -58,6 +59,7 @@ def run_bot():
                 #break
                 if interface.check_post(submission) and submission not in stored_posts:
                     # Remove links > MAX_REMEMBER_LIMIT
+                    log.info("Found new post in subreddit %s", settings.REDDIT_SUBREDDIT)
                     stored_posts = interface.purge_old_links(stored_posts)
                     stored_posts = interface.check_list(reddit, submission, stored_posts)
             

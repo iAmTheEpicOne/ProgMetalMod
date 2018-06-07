@@ -21,6 +21,13 @@ def check_age(submission):
     # True if age is < MAX_REMEMBER_LIMIT
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
 
+def get_submission_age(submission):
+    # Returns a delta time object from the difference of the current time and the submission creation time
+    current_date = datetime.datetime.utcfromtimestamp(time.time())
+    #print submission
+    submission_date = datetime.datetime.utcfromtimestamp(submission.created_utc)
+    return current_date - submission_date
+
 def check_self(submission):
     # True if post is self.post
     return submission.is_self
@@ -33,20 +40,89 @@ def check_removed(submission):
     else:
         return True
 
-def check_domain(submission):
-    # Checks domain of link and print domain name
-    domains = ["youtube.com", "youtu.be", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
-    name = re.search(r'(spotify.com|bandcamp.com|soundcloud.com|youtube.com|youtu.be)', submission.domain)
+def get_domain(submission):
+    # Checks domain of link and print submission and domain name
+    # Returns domain name
+    # domains = ["youtube.com", "youtu.be", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
+    name = re.search('(spotify.com|bandcamp.com|soundcloud.com|youtube.com|youtu.be)', submission.domain)
     if not name is None:
-    #title = submission.title #to make it non-lazy ??
-        print("Link: {}, Domain: {}".format(submission, name.group(0)))
+        return name.group(0)
+    else:
+        return submission.domain
 
-def get_submission_age(submission):
-    # Returns a delta time object from the difference of the current time and the submission creation time
-    current_date = datetime.datetime.utcfromtimestamp(time.time())
-    #print submission
-    submission_date = datetime.datetime.utcfromtimestamp(submission.created_utc)
-    return current_date - submission_date
+def get_title(submission, domain, reports):
+    if domain is "spotify.com":
+        description = submission.media.oembed.description
+        song, band = description.split(", a song by ", 1)
+        extra = re.search(' on Spotify', band)
+        band = band[:extra.start()]
+        if song not in submission.title or band not in submission.title:
+            # song or band is not in submission title
+            #   so title has bad format
+            if reports is 1:
+                rule_bad_title(submission)
+        title = band + " - " + song
+    else if domain is "bandcamp.com":
+        description = submission.media.oembed.title
+        song, band = description.split(", by ", 1)
+        if song not in submission.title or band not in submission.title:
+            # song or band is not in submission title
+            #   so title has bad format
+            if reports is 1:
+                rule_bad_title(submission)
+        title = band + " - " + song
+'''
+getting proper title of youtube and soundcloud links is going to be difficult
+    else if domain is "soundcloud.com:
+        
+    else if domain is "youtube.com" or domain is "youtu.be":
+        #description = submission.title
+        #remove = re.search('\(.*\)', description)
+        #description.
+        author = submission.media.oembed.author_name
+
+        if " - Topic" in author:
+            if "Various Artists" in author:
+                # YouTube channel is "Various Artists - Topic"
+                #   so song name is media.oembed.title
+                song = submission.media.oembed.title
+                description = submission.title
+                if song not in description:
+                    # song is not in the submission title
+                    #   so title has bad format
+                    if reports is 1:
+                        rule_bad_title(submission)
+                extras = re.search('(\(|\[).*?(\)|\])', description)
+                description = description[:extras.start()] + description[extras.end():]
+            topic = re.search(" - Topic", author)
+            author = author[:topic.start()]\
+        else if author in submission.title:
+            
+'''
+    else:
+        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$')
+        if title is None:
+            if reports is 1:
+                rule_bad_title(submission)
+            return submission.title
+    return title
+    
+
+def rule_six_month(submission, sub):
+    print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
+    # submission.mod.remove()
+    # submission is post in violation
+    # sub is original unreposted post
+    submission.report("ProgMetalBot - Repost! Repost!")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
+    reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost of [this post]({}); if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot v0.1".format(submission.shortlink, sub.shortlink))
+
+def rule_bad_title(submission):
+    print("Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
+    # Submission was found to have an incorrect title
+    submission.report("ProgMetalBot - Bad Title Format")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) to check for proper title format or check the modmail.".format(submission.shortlink))
+    reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Bad Title Format", "Please look at [this post]({}) and check for a proper title format.\n\nThank you!\n\nWith humble gratitude, ProgMetalBot v0.1".format(submission.shortlink))
 
 def initialize_link_array(reddit):
     # Initializes the link array of all past submissions
@@ -61,7 +137,8 @@ def initialize_link_array(reddit):
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
         if check_post(submission):
             if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
-                check_domain(submission)
+                # print submission information with reports off
+                print_info(submission, 0)
                 stored_posts.append(submission)
     return stored_posts
 
@@ -76,18 +153,19 @@ def check_list(reddit, submission, stored_posts):
     # If not, add it to the list
     # Store submission in stored_posts if not already stored
     # **Unsure if redundent submissions are added to stored_posts**
-    #if check_url(submission.url) not in [check_url(sub.url) for sub in list] or submission in list:
-    if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
-        check_domain(submission)
+    #if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
+    
+    if submission not in stored_posts:
         stored_posts.append(submission)
+    # Check if exact url already exists
+    if submission.url in [sub.url for sub in stored_posts]:
+        rule_six_month(submission, sub)
+    # Check if title already exists
+    else if get_title(submission) in [get_title(sub) for sub in stored_posts]:
+        rule_six_month(submission, sub)
     else:
-        print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
-        # submission.mod.remove()
-        # submission.shortlink is post in violation
-        # sub.shortlink is original unreposted post
-        submission.report("ProgMetalBot - Repost! Repost!")
-        reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
-        reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost of [this post]({}); if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot v0.1".format(submission.shortlink, sub.shortlink))
+        # print submission information with reports on
+        print_info(submission, 1)
     return stored_posts
 
 def purge_old_links(stored_posts):
@@ -103,3 +181,9 @@ def check_url(url):
     #print response.text[0:1024]
     m.update(response.text.encode("utf-8"))
     return m.digest()
+
+def print_info(submission, reports):
+    domain = get_domain(submission)
+    title = get_title(submission, domain, reports)
+    print("Link: {}, Domain: {}, Title {}".format(submission, domain, title)))
+    

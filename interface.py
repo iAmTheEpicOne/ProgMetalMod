@@ -187,6 +187,7 @@ def check_url(url):
     return m.digest()
 
 def print_info(submission, reports):
+    domain = get_domain(submission)
     title = get_title(submission, reports)
     # possibly format title with .title() or capwords()
     print("Link: {}  Domain: {:14}  Title: {}".format(submission, domain, title))

@@ -9,24 +9,24 @@ import os
 
 
 def check_post(submission):
-    # True if archived and not self.post
-    return check_archived(submission) and not check_self(submission)
+    # True if not archived and not self.post
+    return not check_archived(submission) and not check_self(submission)
 
 def check_archived(submission):
     # True if post is archived (>6 months old)
     return submission.archived
 
 def check_age(submission):
-    # False if age is < MAX_REMEMBER_LIMIT
+    # True if age is < MAX_REMEMBER_LIMIT
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
 
 def check_self(submission):
-    # Checks if is a self.post
+    # True is post is self.post
     return submission.is_self
 
 # .json "removed" value isn't available for non-removed posts
 def check_removed(submission):
-    # Checks if removed
+    # True is post is banned_by mod
     if submission.banned_by is "null":
         return false
     else:
@@ -36,7 +36,7 @@ def check_provider(submission):
     # Checks provider of link and print provider name
     domains = ["YouTube", "BandCamp", "Spotify", "SoundCloud"]
     #if submission.provider_name in domains:
-    print("Provider: {}\nDomain: {}".format(submission.provider_name, submission.domain))
+    print("Link: {}, Provider: {}, Domain: {}".format(submission, submission.provider_name, submission.domain))
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time
@@ -57,9 +57,7 @@ def initialize_link_array(reddit):
             stored_posts = list(filter(None, stored_posts))
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
         if check_post(submission):
-            check_provider(submission)
-            # **Maybe doesn't need to check url here**
-            if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
+            if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
                 check_provider(submission)
                 stored_posts.append(submission)
     return stored_posts
@@ -76,7 +74,6 @@ def check_list(reddit, submission, stored_posts):
     # Store submission in stored_posts if not already stored
     # **Unsure if redundent submissions are added to stored_posts**
     #if check_url(submission.url) not in [check_url(sub.url) for sub in list] or submission in list:
-    check_provider(submission)
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
         check_provider(submission)
         stored_posts.append(submission)

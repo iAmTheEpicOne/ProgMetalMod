@@ -44,12 +44,12 @@ def get_url(submission):
     # Get url
     full_url = submission.url
     if "youtube.com" in full_url:
-        lhs, rhs = full_url.split("?v=", 1)
-        url = rhs[0:11]
+        url = re.search('watch\?v=.{11}')
+        url = rhs[8:]
         return url
     elif "youtu.be" in full_url:
-        lhs, rhs = full_url.split(".be/", 1)
-        url = rhs
+        url = re.search('\.be/.{11}')
+        url = rhs[4:]
         return url
     else:
         return submission.url

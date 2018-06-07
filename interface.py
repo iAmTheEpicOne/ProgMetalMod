@@ -50,7 +50,7 @@ def get_domain(submission):
     else:
         return submission.domain
 
-def get_title(submission, reports):
+def get_title(reddit, submission, reports):
     domain = get_domain(submission)
     if domain is "spotify.com":
         description = submission.media.oembed.description
@@ -146,7 +146,7 @@ def initialize_link_array(reddit):
         if check_post(submission):
             if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
                 # print submission information with reports off
-                print_info(submission, 0)
+                print_info(reddit, submission, 0)
                 stored_posts.append(submission)
     return stored_posts
 
@@ -169,10 +169,10 @@ def check_list(reddit, submission, stored_posts):
     if submission.url in [sub.url for sub in stored_posts]:
         rule_six_month(reddit, submission, sub)
     # Check if title already exists
-    elif get_title(submission, 0) in [get_title(sub, 0) for sub in stored_posts]:
+    elif get_title(reddit, submission, 0) in [get_title(reddit, sub, 0) for sub in stored_posts]:
         rule_six_month(reddit, submission, sub)
     # print submission information with reports on
-    print_info(submission, 1)
+    print_info(reddit, submission, 1)
     return stored_posts
 
 def purge_old_links(stored_posts):
@@ -189,9 +189,9 @@ def check_url(url):
     m.update(response.text.encode("utf-8"))
     return m.digest()
 
-def print_info(submission, reports):
+def print_info(reddit, submission, reports):
     domain = get_domain(submission)
-    title = get_title(submission, reports)
+    title = get_title(reddit, submission, reports)
     # possibly format title with .title() or capwords()
     print("Link: {}  Domain: {:14}  Title: {}".format(submission, domain, title))
     

@@ -71,6 +71,13 @@ def get_title(submission, domain, reports):
             if reports is 1:
                 rule_bad_title(submission)
         title = band + " - " + song
+    else:
+        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$')
+        if title is None:
+            if reports is 1:
+                rule_bad_title(submission)
+            return submission.title
+    return title
 '''
 getting proper title of youtube and soundcloud links is going to be difficult
     elif domain is "soundcloud.com:
@@ -99,13 +106,7 @@ getting proper title of youtube and soundcloud links is going to be difficult
         elif author in submission.title:
             
 '''
-    else:
-        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$')
-        if title is None:
-            if reports is 1:
-                rule_bad_title(submission)
-            return submission.title
-    return title
+
     
 
 def rule_six_month(submission, sub):

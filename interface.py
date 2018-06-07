@@ -49,6 +49,7 @@ def get_url(submission):
         return url
     elif "youtu.be" in full_url:
         url = re.search('\.be/.{11}', full_url)
+        url = url.group(0)
         url = url[4:]
         return url
     else:
@@ -71,6 +72,7 @@ def get_title(reddit, submission, reports):
         description = submission.media.oembed.description
         song, band = description.split(", a song by ", 1)
         extra = re.search(' on Spotify', band)
+        extra = extra.group(0)
         band = band[:extra.start()]
         if song not in submission.title or band not in submission.title:
             # song or band is not in submission title
@@ -89,11 +91,13 @@ def get_title(reddit, submission, reports):
         title = band + " - " + song
     else:
         title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013)\s.*$', submission.title)
+        title = title.group(0)
         if title is None:
             if reports is 1:
                 rule_bad_title(reddit, submission)
             title = submission.title
         extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
+        extra = extra.group(0)
         if not extra is None:
             title = title[:extra.start()] + title[extra.end():]
     return title.encode('utf-8')
@@ -104,6 +108,7 @@ getting proper title of youtube and soundcloud links is going to be difficult
     elif domain is "youtube.com" or domain is "youtu.be":
         #description = submission.title
         #remove = re.search('\(.*\)', description)
+        #remove = remove.group(0)
         #description.
         author = submission.media.oembed.author_name
 

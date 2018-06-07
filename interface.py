@@ -36,7 +36,7 @@ def check_removed(submission):
 def check_domain(submission):
     # Checks domain of link and print domain name
     domains = ["youtube.com", "youtu.be", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
-    name = re.search(r'(?<=.)\w.com', submission.domain)
+    name = re.search(r'(?<=\.)\w*.com', submission.domain)
     #if submission.domain in domains:
     #title = submission.title #to make it non-lazy ??
     print("Link: {}, Domain: {}".format(submission, name))

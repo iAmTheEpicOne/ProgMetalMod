@@ -40,6 +40,21 @@ def check_removed(submission):
     else:
         return True
 
+def get_url(submission):
+    # Get url
+    full_url = submission.url
+    if "youtube.com" in full_url:
+        lhs, rhs = full_url.split("?v=", 1)
+        url = rhs[0:11]
+        return url
+    elif "youtu.be" in full_url:
+        lhs, rhs = full_url.split(".be/", 1)
+        url = rhs
+        return url
+    else:
+        return submission.url
+
+
 def get_domain(submission):
     # Checks domain of link and print submission and domain name
     # Returns domain name
@@ -73,12 +88,12 @@ def get_title(reddit, submission, reports):
                 rule_bad_title(reddit, submission)
         title = band + " - " + song
     else:
-        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013).*$', submission.title)
+        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013)\s(\w*$|\s.*$', submission.title)
         if title is None:
             if reports is 1:
                 rule_bad_title(reddit, submission)
             title = submission.title
-        extra = re.search('\s(\(|\[|\|).*(\)|\]|\|)', title)
+        extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
         if not extra is None:
             title = title[:extra.start()] + title[extra.end():]
     return title.encode('utf-8')
@@ -164,7 +179,7 @@ def check_list(reddit, submission, stored_posts):
     #if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
     
     # Check if exact url already exists
-    if submission.url in [sub.url for sub in stored_posts]:
+    if get_url(submission) in [get_url(sub) for sub in stored_posts]:
         rule_six_month(reddit, submission, sub)
     # Check if title already exists
     elif get_title(reddit, submission, 0) in [get_title(reddit, sub, 0) for sub in stored_posts]:

@@ -6,10 +6,11 @@ import settings
 import logging.handlers
 import logging
 import os
+import pprint
 
 
 # The time in seconds the bot should sleep until it checks again.
-SLEEP = 60
+SLEEP = 600
 
 
 # LOGGING CONFIGURATION
@@ -52,18 +53,26 @@ def run_bot():
         try:
             for submission in subreddit.stream.submissions():
                 # For each submission, check if it is younger than MAX_REMEMBER_LIMIT
+                print(submission.title) # to make it non-lazy
+                pprint.pprint(vars(submission))
+                break
                 if interface.check_post(submission) and submission not in stored_posts:
                     # Remove links > MAX_REMEMBER_LIMIT
                     stored_posts = interface.purge_old_links(stored_posts)
                     stored_posts = interface.check_list(reddit, submission, stored_posts)
-            interface.update_stored_posts(stored_posts)
+            
+            # Write stored posts to a file
+            #interface.update_stored_posts(stored_posts)
+
         # Allows the bot to exit on ^C, all other exceptions are ignored
         except KeyboardInterrupt:
             break
         except Exception as e:
             log.error("Exception %s", e, exc_info=True)
+
         log.info("sleep for %s s", SLEEP)
         time.sleep(SLEEP)
+
 
 # START BOT
 if __name__ == "__main__":

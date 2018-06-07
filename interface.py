@@ -163,8 +163,6 @@ def check_list(reddit, submission, stored_posts):
     # **Unsure if redundent submissions are added to stored_posts**
     #if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
     
-    if submission not in stored_posts:
-        stored_posts.append(submission)
     # Check if exact url already exists
     if submission.url in [sub.url for sub in stored_posts]:
         rule_six_month(reddit, submission, sub)
@@ -172,6 +170,8 @@ def check_list(reddit, submission, stored_posts):
     elif get_title(reddit, submission, 0) in [get_title(reddit, sub, 0) for sub in stored_posts]:
         rule_six_month(reddit, submission, sub)
     # print submission information with reports on
+    if submission not in stored_posts:
+        stored_posts.append(submission)
     print_info(reddit, submission, 1)
     return stored_posts
 

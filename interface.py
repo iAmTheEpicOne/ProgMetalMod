@@ -6,6 +6,7 @@ import settings
 import logging.handlers
 import logging
 import os
+import re
 
 
 def check_post(submission):
@@ -28,16 +29,17 @@ def check_self(submission):
 def check_removed(submission):
     # True if post is banned_by mod
     if submission.banned_by is "null":
-        return false
+        return False
     else:
-        return true
+        return True
 
-def check_provider(submission):
-    # Checks provider of link and print provider name
-    domains = ["YouTube", "BandCamp", "Spotify", "SoundCloud"]
-    #if submission.provider_name in domains:
+def check_domain(submission):
+    # Checks domain of link and print domain name
+    domains = ["youtube.com", "youtu.be", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
+    name = re.search(r'(?<=.)\w.com', submission.domain)
+    #if submission.domain in domains:
     #title = submission.title #to make it non-lazy ??
-    print("Link: {}, Domain: {}".format(submission, submission.domain))
+        print("Link: {}, Domain: {}".format(submission, name))
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time

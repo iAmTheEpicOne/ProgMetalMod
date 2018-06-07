@@ -91,13 +91,13 @@ def get_title(reddit, submission, reports):
         title = band + " - " + song
     else:
         title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013)\s.*$', submission.title)
-        title = title.group(0)
         if title is None:
             if reports is 1:
                 rule_bad_title(reddit, submission)
             title = submission.title
+        else:
+            title = title.group(0)
         extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
-        extra = extra.group(0)
         if not extra is None:
             title = title[:extra.start()] + title[extra.end():]
     return title.encode('utf-8')

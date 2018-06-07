@@ -59,7 +59,7 @@ def initialize_link_array(reddit):
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
         if check_post(submission):
             if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
-                # check_provider(submission)
+                check_provider(submission)
                 stored_posts.append(submission)
     return stored_posts
 

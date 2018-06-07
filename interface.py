@@ -62,7 +62,7 @@ def get_title(submission, domain, reports):
             if reports is 1:
                 rule_bad_title(submission)
         title = band + " - " + song
-    else if domain is "bandcamp.com":
+    elif domain is "bandcamp.com":
         description = submission.media.oembed.title
         song, band = description.split(", by ", 1)
         if song not in submission.title or band not in submission.title:
@@ -73,9 +73,9 @@ def get_title(submission, domain, reports):
         title = band + " - " + song
 '''
 getting proper title of youtube and soundcloud links is going to be difficult
-    else if domain is "soundcloud.com:
+    elif domain is "soundcloud.com:
         
-    else if domain is "youtube.com" or domain is "youtu.be":
+    elif domain is "youtube.com" or domain is "youtu.be":
         #description = submission.title
         #remove = re.search('\(.*\)', description)
         #description.
@@ -96,7 +96,7 @@ getting proper title of youtube and soundcloud links is going to be difficult
                 description = description[:extras.start()] + description[extras.end():]
             topic = re.search(" - Topic", author)
             author = author[:topic.start()]\
-        else if author in submission.title:
+        elif author in submission.title:
             
 '''
     else:
@@ -161,7 +161,7 @@ def check_list(reddit, submission, stored_posts):
     if submission.url in [sub.url for sub in stored_posts]:
         rule_six_month(submission, sub)
     # Check if title already exists
-    else if get_title(submission) in [get_title(sub) for sub in stored_posts]:
+    elif get_title(submission) in [get_title(sub) for sub in stored_posts]:
         rule_six_month(submission, sub)
     else:
         # print submission information with reports on

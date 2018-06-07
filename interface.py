@@ -76,8 +76,10 @@ def get_title(submission, domain, reports):
         if title is None:
             if reports is 1:
                 rule_bad_title(submission)
-            return submission.title
-    return title
+            title = submission.title
+        extra = re.search('\s(\(|\[|\|).*(\)|\]|\|)', title)
+        title = title[:extra.start()] + title[extra.end():]
+    return title.encode('utf-8')
 '''
 getting proper title of youtube and soundcloud links is going to be difficult
     elif domain is "soundcloud.com:

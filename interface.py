@@ -36,6 +36,7 @@ def check_provider(submission):
     # Checks provider of link and print provider name
     domains = ["YouTube", "BandCamp", "Spotify", "SoundCloud"]
     #if submission.provider_name in domains:
+    title = submission.title #to make it non-lazy ??
     print("Link: {}, Provider: {}, Domain: {}".format(submission, submission.provider_name, submission.domain))
 
 def get_submission_age(submission):

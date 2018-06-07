@@ -45,6 +45,7 @@ def get_url(submission):
     full_url = submission.url
     if "youtube.com" in full_url:
         url = re.search('watch\?v=.{11}', full_url)
+        url = url.group(0)
         url = url[8:]
         return url
     elif "youtu.be" in full_url:
@@ -107,9 +108,7 @@ getting proper title of youtube and soundcloud links is going to be difficult
         
     elif domain is "youtube.com" or domain is "youtu.be":
         #description = submission.title
-        #remove = re.search('\(.*\)', description)
-        #remove = remove.group(0)
-        #description.
+        
         author = submission.media.oembed.author_name
 
         if " - Topic" in author:
@@ -124,8 +123,10 @@ getting proper title of youtube and soundcloud links is going to be difficult
                     if reports is 1:
                         rule_bad_title(reddit, submission)
                 extra = re.search('(\(|\[).*?(\)|\])', description)
-                description = description[:extra.start()] + description[extra.end():]
+                if not extra is None:
+                    description = description[:extra.start()] + description[extra.end():]
             topic = re.search(" - Topic", author)
+            topic = topic.group(0)
             author = author[:topic.start()]
         description = submission.media.oembed.title
         

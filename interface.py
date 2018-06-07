@@ -189,5 +189,5 @@ def check_url(url):
 def print_info(submission, reports):
     domain = get_domain(submission)
     title = get_title(submission, domain, reports).title()
-    print("Link: {}, Domain: {14}, Title: {}".format(submission, domain, title))
+    print("Link: {}, Domain: {:14}, Title: {}".format(submission, domain, title))
     

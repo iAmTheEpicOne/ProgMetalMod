@@ -53,9 +53,9 @@ def run_bot():
         try:
             for submission in subreddit.stream.submissions():
                 # For each submission, check if it is younger than MAX_REMEMBER_LIMIT
-                print(submission.title) # to make it non-lazy
-                pprint.pprint(vars(submission))
-                break
+                #print(submission.title) # to make it non-lazy
+                #pprint.pprint(vars(submission))
+                #break
                 if interface.check_post(submission) and submission not in stored_posts:
                     # Remove links > MAX_REMEMBER_LIMIT
                     stored_posts = interface.purge_old_links(stored_posts)

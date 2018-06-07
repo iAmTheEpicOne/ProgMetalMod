@@ -32,6 +32,12 @@ def check_removed(submission):
     else:
         return true
 
+def check_provider(submission):
+    # Checks provider of link and print provider name
+    domains = ("YouTube", "BandCamp", "Spotify", "SoundCloud")
+    if submission.provider_name in domains:
+        print submission.provider_name
+
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time
     current_date = datetime.datetime.utcfromtimestamp(time.time())
@@ -69,6 +75,7 @@ def check_list(reddit, submission, stored_posts):
     # **Unsure if redundent submissions are added to stored_posts**
     #if check_url(submission.url) not in [check_url(sub.url) for sub in list] or submission in list:
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
+        check_provider(submission)
         stored_posts.append(submission)
     else:
         print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))

@@ -56,6 +56,7 @@ def initialize_link_array(reddit):
             stored_posts = stored_posts.split("\n")
             stored_posts = list(filter(None, stored_posts))
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
+        check_provider(submission)
         if check_post(submission):
             # **Maybe doesn't need to check url here**
             if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
@@ -75,6 +76,7 @@ def check_list(reddit, submission, stored_posts):
     # Store submission in stored_posts if not already stored
     # **Unsure if redundent submissions are added to stored_posts**
     #if check_url(submission.url) not in [check_url(sub.url) for sub in list] or submission in list:
+    check_provider(submission)
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
         check_provider(submission)
         stored_posts.append(submission)

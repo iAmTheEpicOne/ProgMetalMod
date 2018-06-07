@@ -34,7 +34,7 @@ def check_removed(submission):
 
 def check_provider(submission):
     # Checks provider of link and print provider name
-    domains = ("YouTube", "BandCamp", "Spotify", "SoundCloud")
+    domains = ["YouTube", "BandCamp", "Spotify", "SoundCloud"]
     if submission.provider_name in domains:
         print submission.provider_name
 

@@ -37,7 +37,7 @@ def check_domain(submission):
     # Checks domain of link and print domain name
     domains = ["youtube.com", "youtu.be", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
     name = re.search(r'(spotify.com|bandcamp.com|soundcloud.com|youtube.com|youtu.be)', submission.domain)
-    if name.group(0) in domains:
+    if name not None:
     #title = submission.title #to make it non-lazy ??
         print("Link: {}, Domain: {}".format(submission, name.group(0)))
 

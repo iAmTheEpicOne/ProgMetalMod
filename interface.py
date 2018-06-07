@@ -61,7 +61,7 @@ def initialize_link_array(reddit):
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
         if check_post(submission):
             if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
-                check_provider(submission)
+                check_domain(submission)
                 stored_posts.append(submission)
     return stored_posts
 
@@ -78,7 +78,7 @@ def check_list(reddit, submission, stored_posts):
     # **Unsure if redundent submissions are added to stored_posts**
     #if check_url(submission.url) not in [check_url(sub.url) for sub in list] or submission in list:
     if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
-        check_provider(submission)
+        check_domain(submission)
         stored_posts.append(submission)
     else:
         print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))

@@ -44,12 +44,12 @@ def get_url(submission):
     # Get url
     full_url = submission.url
     if "youtube.com" in full_url:
-        url = re.search('watch\?v=.{11}', full_url)
+        url = re.search('watch[?]v=.{11}', full_url)
         url = url.group(0)
         url = url[8:]
         return url
     elif "youtu.be" in full_url:
-        url = re.search('\.be/.{11}', full_url)
+        url = re.search('\.be\/.{11}', full_url)
         url = url.group(0)
         url = url[4:]
         return url
@@ -91,16 +91,24 @@ def get_title(reddit, submission, reports):
                 rule_bad_title(reddit, submission)
         title = band + " - " + song
     else:
-        title = re.search('^.+?\s(?:-{1:2}|\u2014|\u2013)\s.*$', submission.title)
+        # REGEX OVERLOAD INCOMING
+        # Use regexr.com with regex in ' ' and check all the titles it catches
+        # re.search will store Artist in title.group(1) and Song in title.group(2)
+        title = re.search('(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)([^"]*?)(?:\/\/.*|\\.*|["].*|\s?[-([\s]\s?(?:drum|guitar|bass|vocal|voice|playthrough|ffo|official|new|metal|prog).*|)(?:(?:(?:\s?[()[\]{}|]).*?[()[\]{}|]?.?$)|(?:$))', submission.title)
         if title is None:
+            #ah fuck it didn't work
             if reports is 1:
                 rule_bad_title(reddit, submission)
-            title = submission.title
-        else:
-            title = title.group(0)
-        extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
-        if not extra is None:
-            title = title[:extra.start()] + title[extra.end():]
+        #title = re.search('^.+?\s(?:-{1,2}|\u2014|\u2013)\s.*$', submission.title)
+        #if title is None:
+        #    if reports is 1:
+        #        rule_bad_title(reddit, submission)
+        #    title = submission.title
+        #else:
+        #    title = title.group(0)
+        #extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
+        #if not extra is None:
+        #    title = title[:extra.start()] + title[extra.end():]
     return title.encode('utf-8')
 '''
 getting proper title of youtube and soundcloud links is going to be difficult
@@ -135,6 +143,10 @@ getting proper title of youtube and soundcloud links is going to be difficult
 
 '''
 
+
+def rule_violation(rule):
+    if not 'rules_violated' in locals():
+        rules_violated = []
     
 
 def rule_six_month(reddit, submission, sub):

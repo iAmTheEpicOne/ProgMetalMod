@@ -8,6 +8,7 @@ name = "pypi"
 [packages]
 requests = "*"
 praw = "*"
+musicbrainzngs = "*"
 
 [requires]
 python_version = "3.6.5"

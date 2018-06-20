@@ -235,7 +235,7 @@ def check_submission(reddit, submission):
     link_domain = get_domain(submission)
     if not check_domain(link_domain):
         # could check domain against secondary list including facebook, twitter, metal magazines, etc.
-        continue
+        return
     rules_violated = [submission]
     post_title = submission.title
     post_info = get_post_title(submission)
@@ -244,14 +244,14 @@ def check_submission(reddit, submission):
         rules_violated = rule_violation(rules_violated, 1)
         perform_mod_actions(reddit, rules_violated)
         rules_violated = []
-        continue
+        return
     else:
         post_artist = post_info[0]
         post_song = post_info[1]
     link_info = get_link_title(submission)
     if link_info is None:
         # None means soundcloud link which is not handled yet
-        continue
+        return
     else:
         link_artist = link_info[0]
         link_song = link_info[1]

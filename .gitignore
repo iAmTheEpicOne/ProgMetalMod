@@ -5,3 +5,4 @@ staticfiles
 db.sqlite3
 bot.log
 secrets.txt
+lastfm_settings.txt

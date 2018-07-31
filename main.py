@@ -6,6 +6,7 @@ import interface
 import settings
 import logging.handlers
 import logging
+import logger
 import os
 import pprint
 
@@ -21,20 +22,21 @@ LOG_FILE_MAXSIZE = 1024 * 256
 
 
 # LOGGING SETUP
-logging.basicConfig(level=logging.DEBUG)
-log = logging.getLogger("bot").setLevel(logging.INFO)
-log_formatter = logging.Formatter('%(levelname)s: %(message)s')
-log_formatter_file = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-log_stderrHandler = logging.StreamHandler()
-log_stderrHandler.setFormatter(log_formatter)
-log.addHandler(log_stderrHandler)
-if LOG_FILENAME is not None:
-	log_fileHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=LOG_FILE_MAXSIZE,
-	                                                       backupCount=LOG_FILE_BACKUPCOUNT)
-	log_fileHandler.setFormatter(log_formatter_file)
-	log.addHandler(log_fileHandler)
+log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
+#log = logging.getLogger("bot").setLevel(logging.INFO)
+#log_formatter = logging.Formatter('%(levelname)s: %(message)s')
+#log_formatter_file = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+#log_stderrHandler = logging.StreamHandler()
+#log_stderrHandler.setFormatter(log_formatter)
+#log.addHandler(log_stderrHandler)
+#if LOG_FILENAME is not None:
+#	log_fileHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=LOG_FILE_MAXSIZE,
+#	                                                       backupCount=LOG_FILE_BACKUPCOUNT)
+#	log_fileHandler.setFormatter(log_formatter_file)
+#	log.addHandler(log_fileHandler)
 # Musicbrainz logging
-logging.getLogger("musicbrainzngs").setLevel(logging.INFO)
+#logging.getLogger("musicbrainzngs").setLevel(logging.INFO)
 
 # MAIN PROCEDURE
 def run_bot():
@@ -87,7 +89,6 @@ def run_bot():
 
         log.info("sleep for %s s", SLEEP)
         time.sleep(SLEEP)
-
 
 # START BOT
 if __name__ == "__main__":

@@ -102,11 +102,11 @@ def get_link_title(reddit, submission):
     # Need to add YouTube API for better info
     # Currently cannot access a video's description
         link_author = submission.media.oembed.author_name
-        link_title = submission.media.oembed.title
+        link_media_title = submission.media.oembed.title
         if " - Topic" in link_author:
         # YouTube channel is auto-generated "Artist - Topic"
         # so video title is the song name
-            song = link_title
+            song = link_media_title
             if "Various Artists" in link_author:
             # YouTube channel is "Various Artist - Topic"
             # so artist name is unknown
@@ -118,9 +118,9 @@ def get_link_title(reddit, submission):
             link_title = [artist, song]
         # If video is normal upload by label or user
         else:
-            title = re.search('^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_title)
+            title = re.search('^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
-                return [link_title, None]
+                link_title = [link_media_title, None]
             else:
                 artist = title.group(1).encode('utf-8')
                 song = title.group(2).encode('utf-8')
@@ -128,6 +128,8 @@ def get_link_title(reddit, submission):
     elif domain is "soundcloud.com":
     # Need to add SoundCloud API for info
         return None
+    else:
+        link_title = [submission.media.oembed.title, None]
     return link_title
 
 def get_post_title(submission):
@@ -234,7 +236,8 @@ def check_submission(reddit, submission):
     # Artist and Song name verification happens here with checks against submission title
     link_domain = get_domain(submission)
     if not check_domain(link_domain):
-        # could check domain against secondary list including facebook, twitter, metal magazines, etc.
+        # link domain is not youtube, spotify, bandcamp, or soundcloud
+        # could check domain against secondary list including facebook, twitter, metal magazines, etc. for different handling
         return
     rules_violated = [submission]
     post_title = submission.title

@@ -75,7 +75,7 @@ def run_bot():
                 
                 # Only checks submission for accurate title/link info
                 if interface.check_post(submission):
-                    log.info("Found new post in subreddit %s", settings.REDDIT_SUBREDDIT)
+                    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
                     interface.check_submission(reddit, submission)
                     
             # Write stored posts to a file

@@ -248,7 +248,7 @@ def check_submission(reddit, submission):
     else:
         post_artist = post_info[0]
         post_song = post_info[1]
-    link_info = get_link_title(submission)
+    link_info = get_link_title(reddit, submission)
     if link_info is None:
         # None means soundcloud link which is not handled yet
         return

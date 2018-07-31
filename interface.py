@@ -129,7 +129,7 @@ def get_link_title(reddit, submission):
     # Need to add SoundCloud API for info
         return None
     else:
-        link_title = [submission.media.oembed.title, None]
+        link_title = None
     return link_title
 
 def get_post_title(submission):

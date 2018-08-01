@@ -20,9 +20,13 @@ def check_archived(submission):
     # True if post is archived (>6 months old)
     return submission.archived
 
-def check_age(submission):
+def check_age_max(submission):
     # True if age is < MAX_REMEMBER_LIMIT
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
+    
+def check_age_day(submission):
+    # True if age is < 1 day
+    return get_submission_age(submission).days < 1
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time
@@ -139,12 +143,12 @@ def get_post_title(submission):
     title = re.search('(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vocal|voice|playthrough|ffo|official|new|metal|prog).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
-        return None
+        post_title = [submission.title, ""]
     else:
         artist = title.group(1).encode('utf-8')
         song = title.group(2).encode('utf-8')
         post_title = [artist, song]
-        return post_title
+    return post_title
     #title = re.search('^.+?\s(?:-{1,2}|\u2014|\u2013)\s.*$', submission.title)
     #if title is None:
     #    if reports is 1:
@@ -159,7 +163,7 @@ def get_post_title(submission):
 def rule_bad_title(reddit, submission):
     # Submission was found to have an incorrect title
     # Submission will be reported and message sent to mods
-    print("Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
+    log.info("Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #submission.report("ProgMetalBot - Bad Title Format")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) to check for proper title format or check the modmail.".format(submission.shortlink))
@@ -169,7 +173,7 @@ def rule_bad_title(reddit, submission):
 def rule_bad_title_report(reddit, submission):
     # Submission was found to possibly have an incorrect title
     # Submission will only be reported to mods for verification
-    print("Possible Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
+    log.info("Possible Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #submission.report("ProgMetalBot - Possible Bad Title/Link Match")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) to check for proper match of submission title and linked song or check the modmail.".format(submission.shortlink))
@@ -179,11 +183,11 @@ def rule_bad_title_report(reddit, submission):
 def rule_six_month(reddit, submission, sub):
     # Submission was found to violate the 'repost in six months' rule
     # Submission will be reported and message sent to mods
-    print("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
+    log.info("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
     #submission.mod.remove()
     # ***UNCOMMENT LATER***
     #submission.report("ProgMetalBot - Repost! Repost!")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "I DID A THING\n\nPlease look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) for a possible repost or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost of [this post]({}); if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot".format(submission.shortlink, sub.shortlink))
 
@@ -217,13 +221,26 @@ def initialize_link_array(reddit):
             stored_posts = f.read()
             stored_posts = stored_posts.split("\n")
             stored_posts = list(filter(None, stored_posts))
+    posts_count = 0
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
         if check_post(submission):
-            if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
+            #if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
+            if submission not in stored_posts and not check_age_day(submission):
                 # print submission information with reports off
-                print_info(reddit, submission, 0)
+                #print_info(reddit, submission, 0)
                 stored_posts.append(submission)
+                posts_count += 1
+    log.info("Found %s posts within last six months", posts_count)
     return stored_posts
+
+#postgresql create table
+#def create_table():
+    # postgresql create table
+#    commands = (
+#        """
+#        CREATE TABLE posts (
+#            post_id SERIAL PRIMARY KEY
+#        """)
 
 def update_stored_posts(stored_posts):
     with open("stored_posts.txt", "w") as f:
@@ -239,14 +256,15 @@ def check_submission(reddit, submission):
         # link domain is not youtube, spotify, bandcamp, or soundcloud
         # could check domain against secondary list including facebook, twitter, metal magazines, etc. for different handling
         return
-    rules_violated = [submission]
+    #rules_violated = []
     post_title = submission.title
     post_info = get_post_title(submission)
-    if post_info is None:
+    if post_info[1] is "":
         # add rule violation for bad title
-        rules_violated = rule_violation(rules_violated, 1)
-        perform_mod_actions(reddit, rules_violated)
-        rules_violated = []
+        #rules_violated = rule_violation(rules_violated, 1)
+        #perform_mod_actions(reddit, rules_violated)
+        #rules_violated = []
+        rule_bad_title(reddit, submission)
         return
     else:
         post_artist = post_info[0]
@@ -270,11 +288,13 @@ def check_submission(reddit, submission):
         video_title = link_artist
         if post_artist not in video_title or post_song not in video_title:
             # Report for artist or song in post title not found in link title
-            rules_violated = rule_violation(rules_violated, 2)
+            #rules_violated = rule_violation(rules_violated, 2)
+            rule_bad_title_report(reddit, submission)
     elif post_artist is not link_artist or post_song is not link_song:
             # Report for artist or song in post title not found in link title
-            rules_violated = rule_violation(rules_violated, 2)
-    perform_mod_actions(reddit, rules_violated)
+            #rules_violated = rule_violation(rules_violated, 2)
+            rule_bad_title_report(reddit, submission)
+    #perform_mod_actions(reddit, rules_violated)
     rules_violated = []
 
 def check_list(reddit, submission, stored_posts):
@@ -286,15 +306,26 @@ def check_list(reddit, submission, stored_posts):
     #if submission.url not in [sub.url for sub in stored_posts] or submission in stored_posts:
     
     # Check if exact url already exists
-    if get_url(submission) in [get_url(sub) for sub in stored_posts]:
-        rule_six_month(reddit, submission, sub)
+    sub_url = get_url(submission)
+    sub_title = get_post_title(submission)
+    for sub in stored_posts:
+        if sub_url in get_url(sub):
+            rule_six_month(reddit, submission, sub)
+        elif sub_title in get_post_title(sub):
+            rule_six_month(reddit, submission, sub)
+        if submission not in stored_posts:
+            log_info(submission)
+            stored_posts.append(submission)
+            
+    #if get_url(submission) in [get_url(sub) for sub in stored_posts]:
+    #    rule_six_month(reddit, submission, sub)
     # Check if title already exists
-    elif get_title(reddit, submission, 0) in [get_title(reddit, sub, 0) for sub in stored_posts]:
-        rule_six_month(reddit, submission, sub)
+    #elif get_post_title(submission) in [get_post_title(sub) for sub in stored_posts]:
+    #    rule_six_month(reddit, submission, sub)
     # print submission information with reports on
-    if submission not in stored_posts:
-        stored_posts.append(submission)
-    print_info(reddit, submission, 1)
+    #if submission not in stored_posts:
+    #    stored_posts.append(submission)
+    #print_info(reddit, submission, 1)
     return stored_posts
 
 def purge_old_links(stored_posts):
@@ -311,9 +342,13 @@ def check_url(url):
     m.update(response.text.encode("utf-8"))
     return m.digest()
 
-def print_info(reddit, submission, reports):
+def log_info(submission):
     domain = get_domain(submission)
-    title = get_title(reddit, submission, reports)
+    title = get_post_title(submission)
     # possibly format title with .title() or capwords()
-    print("Link: {}  Domain: {:14}  Title: {}".format(submission, domain, title))
+    if title[1] is "":
+        title_str = title[0]
+    else:
+        title_str = title[0] + " - " + title[1]
+    log.info("Link: {}  Domain: {:14}  Title: {}".format(submission, domain, title_str))
     

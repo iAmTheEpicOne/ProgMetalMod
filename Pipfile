@@ -9,6 +9,7 @@ name = "pypi"
 requests = "*"
 praw = "*"
 musicbrainzngs = "*"
+"psycopg2-binary" = "*"
 
 [requires]
 python_version = "3.6.5"

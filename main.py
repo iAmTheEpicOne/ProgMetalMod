@@ -4,12 +4,13 @@ import musicbrainzngs
 import time
 import interface
 import settings
-import logging.handlers
+#import logging.handlers
 import logging
 import logger
 import os
 import pprint
-
+#import psycopg2
+import boto3
 
 # The time in seconds the bot should sleep until it checks again.
 SLEEP = 600
@@ -41,23 +42,30 @@ log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
 # MAIN PROCEDURE
 def run_bot():
     
-    #api and authentication variables
+    # progmetalbot useragent and version
     app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION']
+    # praw
     reddit = praw.Reddit(user_agent=app_useragent_version,
                          client_id=os.environ['REDDIT_CLIENT_ID'],
                          client_secret=os.environ['REDDIT_CLIENT_SECRET'],
                          password=os.environ['REDDIT_PASSWORD'],
                          username=os.environ['REDDIT_USERNAME'])
+    # musicbrainz
     musicbrainzngs.auth(os.environ['MUSICBRAINZ_USERNAME'],
                         os.environ['MUSICBRAINZ_PASSWORD'])
     musicbrainzngs.set_useragent(os.environ['APP_USERAGENT'],
                                  os.environ['APP_VERSION'],
                                  os.environ['CONTACT_EMAIL'])
-    
+    # postgresql
+    #DATABASE_URL = os.environ['DATABASE_URL']
+    #conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # cloudcube AWS
+    s3 = boto3.resource('s3')
+    # subreddit
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     
-    #log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
-    #stored_posts = interface.initialize_link_array(reddit)
+    log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
+    stored_posts = interface.initialize_link_array(reddit)
     log.info("Start bot for subreddit %s", settings.REDDIT_SUBREDDIT)
     while True:
         try:
@@ -66,17 +74,17 @@ def run_bot():
                 
                 # Checks submission against stored posts from last 6 months
                 # Checks submission for accurate title/link info
-                #if interface.check_post(submission) and submission not in stored_posts:
-                #    # Remove links > MAX_REMEMBER_LIMIT
-                #    log.info("Found new post in subreddit %s", settings.REDDIT_SUBREDDIT)
-                #    stored_posts = interface.purge_old_links(stored_posts)
-                #    interface.check_submission(reddit, submission)
-                #    stored_posts = interface.check_list(reddit, submission, stored_posts)
+                stored_posts = interface.purge_old_links(stored_posts)
+                if interface.check_post(submission) and submission not in stored_posts:
+                    # Remove links > MAX_REMEMBER_LIMIT
+                    log.info("Found new post in subreddit %s", settings.REDDIT_SUBREDDIT)
+                    interface.check_submission(reddit, submission)
+                    stored_posts = interface.check_list(reddit, submission, stored_posts)
                 
                 # Only checks submission for accurate title/link info
-                if interface.check_post(submission):
-                    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
-                    interface.check_submission(reddit, submission)
+                #if interface.check_post(submission):
+                #    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
+                #    interface.check_submission(reddit, submission)
                     
             # Write stored posts to a file
             #interface.update_stored_posts(stored_posts)
@@ -85,8 +93,13 @@ def run_bot():
         except KeyboardInterrupt:
             break
         except Exception as e:
-            log.error("Exception %s", e, exc_info=True)
-
+            log.error("Exception in submission stream: %s", e, exc_info=True)
+        
+        try:
+            log.info("Alerting admin")
+            reddit.redditor(settings.USER_TO_MESSAGE).message("Bot had an exception, help!")
+        except Exception as e:
+            log.error("Exception in messaging admin: %s", e, exc_info=True)
         log.info("sleep for %s s", SLEEP)
         time.sleep(SLEEP)
 

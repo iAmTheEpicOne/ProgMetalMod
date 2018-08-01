@@ -60,7 +60,7 @@ def run_bot():
     #DATABASE_URL = os.environ['DATABASE_URL']
     #conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     # cloudcube AWS
-    s3 = boto3.resource('s3')
+    #s3 = boto3.resource('s3')
     # subreddit
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     

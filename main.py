@@ -76,7 +76,7 @@ def run_bot():
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
                 stored_posts = interface.purge_old_links(stored_posts)
-                if interface.check_post(submission) and submission not in stored_posts and interface.check_age_hours(submission):
+                if interface.check_post(submission) and submission not in stored_posts and interface.check_age_days(submission):
                     # Remove links > MAX_REMEMBER_LIMIT
                     log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
                     bool_post = interface.check_submission(reddit, submission)
@@ -96,12 +96,11 @@ def run_bot():
             break
         except Exception as e:
             log.error("Exception in submission stream: %s", e, exc_info=True)
-        
-        try:
-            log.info("Alerting admin")
-            reddit.redditor(settings.USER_TO_MESSAGE).message("Bot had an exception, help!")
-        except Exception as e:
-            log.error("Exception in messaging admin: %s", e, exc_info=True)
+            try:
+                log.info("Alerting admin")
+                reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Bot had an exception {}, help!".format(e))
+            except Exception as e:
+                log.error("Exception in messaging admin: %s", e, exc_info=True)
         log.info("sleep for %s s", SLEEP)
         time.sleep(SLEEP)
 

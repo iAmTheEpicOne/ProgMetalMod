@@ -120,7 +120,7 @@ def get_link_title(reddit, submission):
         # If video is normal upload by label or user
         else:
             # Regex
-            title = re.search('^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
+            title = re.search('(?i)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title, None]
             else:
@@ -138,7 +138,7 @@ def get_post_title(submission):
     # REGEX OVERLOAD INCOMING
     # Use regex string in ' ' on regexr.com and check out all the titles it catches!
     # re.search will store 'Artist' in title.group(1) and 'Song' in title.group(2)
-    title = re.search('(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vocal|voice|playthrough|ffo|official|new|metal|prog).*|$|\n)', submission.title)
+    title = re.search('(?i)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vocal|voice|playthrough|ffo|official|new|metal|prog).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
         post_title = [submission.title, ""]

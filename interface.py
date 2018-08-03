@@ -192,7 +192,7 @@ def rule_bad_title_report(reddit, submission):
 def rule_six_month(reddit, submission, sub):
     # Submission was found to violate the 'repost in six months' rule
     # Submission will be reported and message sent to mods
-    log.info("Rule Violation (6-month Repost): Reporting {}".format(submission.shortlink))
+    log.info("Rule Violation (6-month Repost): Reporting {}, repost of {}".format(submission.shortlink, sub.shortlink))
     #submission.mod.remove()
     # ***UNCOMMENT LATER***
     #submission.report("ProgMetalBot - Repost! Repost!")
@@ -239,7 +239,7 @@ def initialize_link_array(reddit):
                 #print_info(reddit, submission, 0)
                 stored_posts.append(submission)
                 posts_count += 1
-    log.info("Found %s posts within last six months", posts_count)
+    log.info("Found {} posts within last six months".format(posts_count))
     return stored_posts
 
 #postgresql create table
@@ -308,7 +308,7 @@ def check_submission(reddit, submission):
                 rule_bad_title_report(reddit, submission)
     if not get_musicbrainz_result(post_artist, post_song):
         report_musicbrainz(reddit, submission)
-    log.info(Song submitted: post_artist + " - " + post_song)
+    log.info("Song submitted: {} - {}".format(post_artist, post_song)
     return True
     #perform_mod_actions(reddit, rules_violated)
     #rules_violated = []

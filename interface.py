@@ -40,8 +40,9 @@ def check_self(submission):
 
 def check_domain(domain):
     # Checks if link's domain is in accepted domain list
-    domains = ["youtube.com", "youtu.be", "m.youtube.com", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
-    if domain in domains:
+    domains = re.search('.*(youtube.com|youtu.be|spotify.com|bandcamp.com|soundcloud.com).*', domain)
+    #domains = ["youtube.com", "youtu.be", "m.youtube.com", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
+    if domains.group(1) not None:
         return True
     else:
         return False
@@ -56,14 +57,8 @@ def check_removed(submission):
 
 def get_url(submission):
     # Get url
-    full_url = submission.url
-    if "youtube.com" in full_url or "m.youtube.com" in full_url:
-        url = re.search('watch[?]v=(.{11})', full_url)
-        url = "youtu.be/" + url.group(1)
-        return url
-    elif "youtu.be" in full_url:
-        url = re.search('\.be\/(.{11})', full_url)
-        url = "youtu.be/" + url.group(1)
+    url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
+    if url.group(1) not None:
         return url
     else:
         return submission.url
@@ -306,7 +301,7 @@ def check_submission(reddit, submission):
                 rule_bad_title_report(reddit, submission)
     if not get_musicbrainz_result(post_artist, post_song):
         report_musicbrainz(reddit, submission)
-    log.info("Song submitted: {} - {}".format(post_artist, post_song))
+    log.info("Domain: {14} Song submitted: {} - {}".format(link_domain, post_artist, post_song))
     return True
     #perform_mod_actions(reddit, rules_violated)
     #rules_violated = []
@@ -332,7 +327,7 @@ def check_list(reddit, submission, stored_posts):
             sub_title = sub_title_split[0] + " -- " + sub_title_split[1]
             if post_title in sub_title:
                 rule_six_month(reddit, submission, sub)
-    log_info(submission)
+    #log_info(submission)
     stored_posts.append(submission)
             
     #if get_url(submission) in [get_url(sub) for sub in stored_posts]:

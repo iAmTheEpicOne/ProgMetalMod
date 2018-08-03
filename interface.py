@@ -40,12 +40,13 @@ def check_self(submission):
 
 def check_domain(domain):
     # Checks if link's domain is in accepted domain list
+    # Regex
     domains = re.search('.*(youtube.com|youtu.be|spotify.com|bandcamp.com|soundcloud.com).*', domain)
     #domains = ["youtube.com", "youtu.be", "m.youtube.com", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
-    if domains.group(1) is not None:
-        return True
-    else:
+    if domains is None:
         return False
+    else:
+        return True
 
 def check_removed(submission):
     # .json "removed" value isn't available for non-removed posts
@@ -57,11 +58,12 @@ def check_removed(submission):
 
 def get_url(submission):
     # Get url
+    # Regex
     url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
-    if url.group(1) is not None:
-        return url
-    else:
+    if url is None:
         return submission.url
+    else:
+        return url
 
 def get_musicbrainz_result(artist, song):
     # Checks artist and song info against musicbrainz database
@@ -84,12 +86,14 @@ def get_link_title(reddit, submission):
     domain = get_domain(submission)
     if domain is "spotify.com":
         description = submission.media.oembed.description
+        # Regex
         title = re.search('(.*), a song by (.*) on Spotify', description)
         song = title.group(1).encode('utf-8')
         artist = title.group(2).encode('utf-8')
         link_title = [artist, song]
     elif domain is "bandcamp.com":
         description = submission.media.oembed.title
+        # Regex
         title = re.search('(.*), by (.*)', description)
         song = title.group(1).encode('utf-8')
         artist = title.group(2).encode('utf-8')
@@ -109,11 +113,13 @@ def get_link_title(reddit, submission):
             # need to use YouTube api to access video description to get correct artist name
                 artist = None
             else:
+                # Regex
                 topic = re.search('(.*) - Topic', author)
                 artist = topic.group(1)
             link_title = [artist, song]
         # If video is normal upload by label or user
         else:
+            # Regex
             title = re.search('^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title, None]

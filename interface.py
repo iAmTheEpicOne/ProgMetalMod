@@ -283,6 +283,7 @@ def check_submission(reddit, submission):
     if link_info is None:
         # None means soundcloud link which is not handled yet
         # currently: do nothing
+        pass
     else:
         link_artist = link_info[0]
         link_song = link_info[1]
@@ -305,11 +306,9 @@ def check_submission(reddit, submission):
                 # Report for artist or song in post title not found in link title
                 #rules_violated = rule_violation(rules_violated, 2)
                 rule_bad_title_report(reddit, submission)
-        else:
-            if get_musicbrainz_result(post_artist, post_song):
-                log.info(Song submitted: post_artist + " - " post_song)
-            else:
-                report_musicbrainz(reddit, submission)
+    if not get_musicbrainz_result(post_artist, post_song):
+        report_musicbrainz(reddit, submission)
+    log.info(Song submitted: post_artist + " - " + post_song)
     return True
     #perform_mod_actions(reddit, rules_violated)
     #rules_violated = []

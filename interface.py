@@ -308,7 +308,7 @@ def check_submission(reddit, submission):
                 rule_bad_title_report(reddit, submission)
     if not get_musicbrainz_result(post_artist, post_song):
         report_musicbrainz(reddit, submission)
-    log.info("Song submitted: {} - {}".format(post_artist, post_song)
+    log.info("Song submitted: {} - {}".format(post_artist, post_song))
     return True
     #perform_mod_actions(reddit, rules_violated)
     #rules_violated = []

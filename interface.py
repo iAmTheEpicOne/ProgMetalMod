@@ -42,7 +42,7 @@ def check_domain(domain):
     # Checks if link's domain is in accepted domain list
     domains = re.search('.*(youtube.com|youtu.be|spotify.com|bandcamp.com|soundcloud.com).*', domain)
     #domains = ["youtube.com", "youtu.be", "m.youtube.com", "open.spotify.com", "bandcamp.com", "soundcloud.com"]
-    if domains.group(1) not None:
+    if domains.group(1) is not None:
         return True
     else:
         return False
@@ -58,7 +58,7 @@ def check_removed(submission):
 def get_url(submission):
     # Get url
     url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
-    if url.group(1) not None:
+    if url.group(1) is not None:
         return url
     else:
         return submission.url

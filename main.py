@@ -71,15 +71,17 @@ def run_bot():
         try:
             log.info("Reading stream of submissions for subreddit %s", settings.REDDIT_SUBREDDIT)
             for submission in subreddit.stream.submissions():
-                
-                # Checks submission against stored posts from last 6 months
                 # Checks submission for accurate title/link info
+                #   If submission is not from music domain, does not get checked
+                # Checks submission against posts from last 6 months
+                # Adds submission to list after both checks
                 stored_posts = interface.purge_old_links(stored_posts)
                 if interface.check_post(submission) and submission not in stored_posts and interface.check_age_hours(submission):
                     # Remove links > MAX_REMEMBER_LIMIT
                     log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
-                    interface.check_submission(reddit, submission)
-                    stored_posts = interface.check_list(reddit, submission, stored_posts)
+                    bool_post = interface.check_submission(reddit, submission)
+                    if bool_post:
+                        stored_posts = interface.check_list(reddit, submission, stored_posts)
                 
                 # Only checks submission for accurate title/link info
                 #if interface.check_post(submission):

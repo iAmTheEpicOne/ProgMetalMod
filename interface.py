@@ -70,7 +70,8 @@ def get_musicbrainz_result(artist, song):
     # Currently only returns True or False value
     result = musicbrainzngs.search_recordings(artist=artist, recording=song)
     # If the artist and song matches a recording in database then return True
-    if not result['recording-list']:
+    #if not result['recording-list']:
+    if result['count'] < 1:
         return False
     return True
     
@@ -164,7 +165,7 @@ def report_musicbrainz(reddit, submission):
     log.info("Song not found in Musicbrainz: Reporting {}".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #submission.report("ProgMetalBot - Not Found in Musicbrainz")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) for failed Musicbrainz result or check the modmail.".format(submission.shortlink))
+    #reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) for failed Musicbrainz result or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Bad Title Format", "Please look at [this post]({}) for failed Musicbrainz result.\n\nThank you!\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink))
 

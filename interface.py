@@ -71,7 +71,7 @@ def get_musicbrainz_result(artist, song):
     result = musicbrainzngs.search_recordings(artist=artist, recording=song)
     # If the artist and song matches a recording in database then return True
     #if not result['recording-list']:
-    if result['recording-list count'] < 1:
+    if result['recording-count'] < 1:
         return False
     return True
     

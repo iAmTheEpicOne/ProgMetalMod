@@ -57,15 +57,13 @@ def check_removed(submission):
 def get_url(submission):
     # Get url
     full_url = submission.url
-    if "youtube.com" in full_url:
-        url = re.search('watch[?]v=.{11}', full_url)
-        url = url.group(0)
-        url = url[8:]
+    if "youtube.com" in full_url or "m.youtube.com" in full_url:
+        url = re.search('watch[?]v=(.{11})', full_url)
+        url = "youtu.be/" + url.group(1)
         return url
     elif "youtu.be" in full_url:
-        url = re.search('\.be\/.{11}', full_url)
-        url = url.group(0)
-        url = url[4:]
+        url = re.search('\.be\/(.{11})', full_url)
+        url = "youtu.be/" + url.group(1)
         return url
     else:
         return submission.url
@@ -330,7 +328,7 @@ def check_list(reddit, submission, stored_posts):
         if post_url in get_url(sub):
             rule_six_month(reddit, submission, sub)
         else:
-            sub_title_split = get_post_title(sub):
+            sub_title_split = get_post_title(sub)
             sub_title = sub_title_split[0] + " -- " + sub_title_split[1]
             if post_title in sub_title:
                 rule_six_month(reddit, submission, sub)

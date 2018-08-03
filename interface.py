@@ -101,7 +101,7 @@ def get_link_title(reddit, submission):
         song = title.group(1).encode('utf-8')
         artist = title.group(2).encode('utf-8')
         link_title = [artist, song]
-    elif domain is "youtube.com" or domain is "youtu.be":
+    elif domain is "youtube.com" or domain is "youtu.be" or domain is "m.youtube.com":
     # Need to add YouTube API for better info
     # Currently cannot access a video's description
         link_author = submission.media.oembed.author_name
@@ -130,7 +130,7 @@ def get_link_title(reddit, submission):
                 link_title = [artist, song]
     elif domain is "soundcloud.com":
     # Need to add SoundCloud API for info
-        return None
+        link_title = None
     else:
         link_title = None
     return link_title

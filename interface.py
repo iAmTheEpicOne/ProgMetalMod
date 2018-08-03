@@ -24,9 +24,9 @@ def check_age_max(submission):
     # True if age is < MAX_REMEMBER_LIMIT
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
     
-def check_age_day(submission):
-    # True if age is < 1 day
-    return get_submission_age(submission).days < 1
+def check_age_hours(submission):
+    # True if age is < 48 hours
+    return get_submission_age(submission).hours <= 48
 
 def get_submission_age(submission):
     # Returns a delta time object from the difference of the current time and the submission creation time
@@ -74,7 +74,7 @@ def get_url(submission):
 def get_musicbrainz_result(artist, song):
     # Checks artist and song info against musicbrainz database
     # Currently only returns True or False value
-    result = musicbrainzngs.search_recordings(artist=artist, recording=release)
+    result = musicbrainzngs.search_recordings(artist=artist, recording=song)
     # If the artist and song matches a recording in database then return True
     if not result['release-list']:
         return False
@@ -225,7 +225,7 @@ def initialize_link_array(reddit):
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
         if check_post(submission):
             #if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
-            if submission not in stored_posts and not check_age_day(submission):
+            if submission not in stored_posts and not check_age_hours(submission):
                 # print submission information with reports off
                 #print_info(reddit, submission, 0)
                 stored_posts.append(submission)
@@ -309,6 +309,7 @@ def check_list(reddit, submission, stored_posts):
     sub_url = get_url(submission)
     sub_title = get_post_title(submission)
     for sub in stored_posts:
+        #TRY TEXT MATCH AGAINST BOTH SUBMISSION TITLES/URLS
         if sub_url in get_url(sub):
             rule_six_month(reddit, submission, sub)
         elif sub_title in get_post_title(sub):

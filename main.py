@@ -75,9 +75,9 @@ def run_bot():
                 # Checks submission against stored posts from last 6 months
                 # Checks submission for accurate title/link info
                 stored_posts = interface.purge_old_links(stored_posts)
-                if interface.check_post(submission) and submission not in stored_posts:
+                if interface.check_post(submission) and submission not in stored_posts and interface.check_age_hours(submission):
                     # Remove links > MAX_REMEMBER_LIMIT
-                    log.info("Found new post in subreddit %s", settings.REDDIT_SUBREDDIT)
+                    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
                     interface.check_submission(reddit, submission)
                     stored_posts = interface.check_list(reddit, submission, stored_posts)
                 

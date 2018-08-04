@@ -245,7 +245,9 @@ def initialize_link_array(reddit):
     #log.info("Stored posts array has size {}".format(len(stored_posts)))
     #print(', '.join(stored_posts))
     # returns reversed list so that oldest posts are in list first
-    return stored_posts.reverse()
+    stored_posts.reverse()
+    stored_posts = list(filter(None, stored_posts))
+    return stored_posts
 
 #postgresql create table
 #def create_table():

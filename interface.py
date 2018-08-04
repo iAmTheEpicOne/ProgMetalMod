@@ -239,7 +239,7 @@ def initialize_link_array(reddit):
             if submission not in stored_posts and not check_age_days(submission):
                 # print submission information with reports off
                 #print_info(reddit, submission, 0)
-                stored_posts.append(submission)
+                stored_posts.append(submission.shortlink)
                 posts_count += 1
     log.info("Found {} posts within last six months".format(posts_count))
     log.info("Stored posts array has size {}".format(len(stored_posts)))
@@ -329,8 +329,9 @@ def check_list(reddit, submission, stored_posts):
     post_url = get_url(submission)
     post_title_split = get_post_title(submission)
     post_title = post_title_split[0] + " -- " + post_title_split[1]
-    for sub in stored_posts:
+    for sub_id in stored_posts:
         #TRY TEXT MATCH AGAINST BOTH SUBMISSION TITLES/URLS
+        sub = reddit.submission(id=sub_id)
         sub_url = get_url(sub)
         if post_url in sub_url or sub_url in post_url:
             rule_six_month(reddit, submission, sub)

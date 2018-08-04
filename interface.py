@@ -71,9 +71,11 @@ def get_musicbrainz_result(artist, song):
     result = musicbrainzngs.search_recordings(artist=artist, recording=song)
     # If the artist and song matches a recording in database then return True
     #if not result['recording-list']:
-    if result['recording-count'] < 1:
+    count = result['recording-count']
+    if count < 1:
         return False
-    return True
+    else:
+        return True
     
 def get_domain(submission):
     return submission.domain
@@ -139,7 +141,7 @@ def get_post_title(submission):
     # REGEX OVERLOAD INCOMING
     # Use regex string in ' ' on regexr.com and check out all the titles it catches!
     # re.search will store 'Artist' in title.group(1) and 'Song' in title.group(2)
-    title = re.search('(?i)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vocal|voice|playthrough|ffo|official|new|metal|prog).*|$|\n)', submission.title)
+    title = re.search('(?i)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
         post_title = [submission.title, ""]
@@ -164,7 +166,7 @@ def report_musicbrainz(reddit, submission):
     # Submission will be reported and message sent to mods
     log.info("Song not found in Musicbrainz: Reporting {}".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #submission.report("ProgMetalBot - Not Found in Musicbrainz")
+    submission.report("ProgMetalBot - Not Found in Musicbrainz")
     #reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) for failed Musicbrainz result or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Bad Title Format", "Please look at [this post]({}) for failed Musicbrainz result.\n\nThank you!\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink))
@@ -174,7 +176,7 @@ def rule_bad_title(reddit, submission):
     # Submission will be reported and message sent to mods
     log.info("Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #submission.report("ProgMetalBot - Bad Title Format")
+    submission.report("ProgMetalBot - Bad Title Format")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) to check for proper title format or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Bad Title Format", "Please look at [this post]({}) and check for a proper title format.\n\nThank you!\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink))
@@ -184,7 +186,7 @@ def rule_bad_title_report(reddit, submission):
     # Submission will only be reported to mods for verification
     log.info("Possible Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #submission.report("ProgMetalBot - Possible Bad Title/Link Match")
+    submission.report("ProgMetalBot - Possible Bad Title/Link Match")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) to check for proper match of submission title and linked song or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Bad Title Format", "Please look at [this post]({}) and check for a proper match of submission title and linked song.\n\nThank you!\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink))
@@ -195,7 +197,7 @@ def rule_six_month(reddit, submission, sub):
     log.info("Rule Violation (6-month Repost): Reporting {}, repost of {}".format(submission.shortlink, sub.shortlink))
     #submission.mod.remove()
     # ***UNCOMMENT LATER***
-    #submission.report("ProgMetalBot - Repost! Repost!")
+    submission.report("ProgMetalBot - Possible repost")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) for a possible repost of [this post]({}) or check the modmail.".format(submission.shortlink, sub.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Song Repost Report", "Please look at [this post]({}) for a possible repost of [this post]({}); if I haven't screwed up then the post is in violation of the 6-month rule.\n\nThank you!\n\n With humble gratitude, ProgMetalBot".format(submission.shortlink, sub.shortlink))
@@ -306,7 +308,7 @@ def check_submission(reddit, submission):
                 # Report for artist or song in post title not found in link title
                 #rules_violated = rule_violation(rules_violated, 2)
                 rule_bad_title_report(reddit, submission)
-    if not get_musicbrainz_result(post_artist, post_song):
+    if get_musicbrainz_result(post_artist, post_song) is False:
         report_musicbrainz(reddit, submission)
     log.info("Domain: {:14} Song submitted: {} - {}".format(link_domain, post_artist, post_song))
     return True
@@ -332,7 +334,7 @@ def check_list(reddit, submission, stored_posts):
         else:
             sub_title_split = get_post_title(sub)
             sub_title = sub_title_split[0] + " -- " + sub_title_split[1]
-            if post_title in sub_title:
+            if post_title in sub_title or sub_title in post_title:
                 rule_six_month(reddit, submission, sub)
     #log_info(submission)
     stored_posts.append(submission)

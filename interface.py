@@ -244,7 +244,8 @@ def initialize_link_array(reddit):
     log.info("Found {} posts within last six months".format(posts_count))
     #log.info("Stored posts array has size {}".format(len(stored_posts)))
     #print(', '.join(stored_posts))
-    return stored_posts
+    # returns reversed list so that oldest posts are in list first
+    return stored_posts.reverse()
 
 #postgresql create table
 #def create_table():
@@ -361,6 +362,8 @@ def purge_old_links(reddit, stored_posts):
         submission = reddit.submission(id=sub_id)
         if check_archived(submission) or check_removed(submission):
             stored_posts.remove(sub_id)
+        else:
+            break
     return stored_posts
 
 def check_url(url):

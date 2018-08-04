@@ -329,7 +329,8 @@ def check_list(reddit, submission, stored_posts):
     post_title = post_title_split[0] + " -- " + post_title_split[1]
     for sub in stored_posts:
         #TRY TEXT MATCH AGAINST BOTH SUBMISSION TITLES/URLS
-        if post_url in get_url(sub):
+        sub_url = get_url(sub)
+        if post_url in sub_url or sub_url in post_url:
             rule_six_month(reddit, submission, sub)
         else:
             sub_title_split = get_post_title(sub)

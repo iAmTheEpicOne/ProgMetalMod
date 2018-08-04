@@ -75,7 +75,7 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
-                stored_posts = interface.purge_old_links(stored_posts)
+                stored_posts = interface.purge_old_links(reddit, stored_posts)
                 if interface.check_post(submission) and submission not in stored_posts and interface.check_age_days(submission):
                     # Remove links > MAX_REMEMBER_LIMIT
                     log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
@@ -89,7 +89,7 @@ def run_bot():
                 #    interface.check_submission(reddit, submission)
                     
             # Write stored posts to a file
-            #interface.update_stored_posts(stored_posts)
+            #interface.update_stored_posts(reddit, stored_posts)
 
         # Allows the bot to exit on ^C, all other exceptions are ignored
         except KeyboardInterrupt:

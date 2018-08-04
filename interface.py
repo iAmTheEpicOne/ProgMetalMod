@@ -242,8 +242,8 @@ def initialize_link_array(reddit):
                 stored_posts.append(submission.id)
                 posts_count += 1
     log.info("Found {} posts within last six months".format(posts_count))
-    log.info("Stored posts array has size {}".format(len(stored_posts)))
-    print(', '.join(stored_posts))
+    #log.info("Stored posts array has size {}".format(len(stored_posts)))
+    #print(', '.join(stored_posts))
     return stored_posts
 
 #postgresql create table
@@ -255,10 +255,11 @@ def initialize_link_array(reddit):
 #            post_id SERIAL PRIMARY KEY
 #        """)
 
-def update_stored_posts(stored_posts):
+def update_stored_posts(reddit, stored_posts):
     with open("stored_posts.txt", "w") as f:
-        for submission in stored_posts:
-            f.write(submission + "\n")
+        for sub_id in stored_posts:
+            submission = reddit.submission(id=sub_id)
+            f.write(sub_id + "\n")
 
 def check_submission(reddit, submission):
     # Check the submission and link information for bad title
@@ -331,17 +332,17 @@ def check_list(reddit, submission, stored_posts):
     post_title = post_title_split[0] + " -- " + post_title_split[1]
     for sub_id in stored_posts:
         #TRY TEXT MATCH AGAINST BOTH SUBMISSION TITLES/URLS
-        sub = reddit.submission(id=sub_id)
-        sub_url = get_url(sub)
-        if post_url in sub_url or sub_url in post_url:
-            rule_six_month(reddit, submission, sub)
+        old_submission = reddit.submission(id=sub_id)
+        old_post_url = get_url(old_submission)
+        if post_url in old_post_url or old_post_url in post_url:
+            rule_six_month(reddit, submission, old_submission)
         else:
-            sub_title_split = get_post_title(sub)
-            sub_title = sub_title_split[0] + " -- " + sub_title_split[1]
-            if post_title in sub_title or sub_title in post_title:
-                rule_six_month(reddit, submission, sub)
+            old_post_title_split = get_post_title(old_submission)
+            old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
+            if post_title in old_post_title or old_post_title in post_title:
+                rule_six_month(reddit, submission, old_submission)
     #log_info(submission)
-    stored_posts.append(submission)
+    stored_posts.append(submission.id)
             
     #if get_url(submission) in [get_url(sub) for sub in stored_posts]:
     #    rule_six_month(reddit, submission, sub)
@@ -354,11 +355,12 @@ def check_list(reddit, submission, stored_posts):
     #print_info(reddit, submission, 1)
     return stored_posts
 
-def purge_old_links(stored_posts):
+def purge_old_links(reddit, stored_posts):
     # Removes links archived and removed posts from queue
-    for submission in stored_posts:
+    for sub_id in stored_posts:
+        submission = reddit.submission(id=sub_id)
         if check_archived(submission) or check_removed(submission):
-            stored_posts.remove(submission)
+            stored_posts.remove(sub_id)
     return stored_posts
 
 def check_url(url):

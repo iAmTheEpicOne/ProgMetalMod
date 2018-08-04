@@ -75,7 +75,9 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
-                stored_posts = interface.purge_old_links(reddit, stored_posts)
+                if not check_age_max(reddit.submission(id=(stored_posts[0]))):
+                    log.info("Purging old posts from list")
+                    stored_posts = interface.purge_old_links(reddit, stored_posts)
                 if interface.check_post(submission) and submission not in stored_posts and interface.check_age_days(submission):
                     # Remove links > MAX_REMEMBER_LIMIT
                     log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)

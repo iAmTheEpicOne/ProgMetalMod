@@ -241,12 +241,13 @@ def initialize_link_array(reddit):
                 #print_info(reddit, submission, 0)
                 stored_posts.append(submission.id)
                 posts_count += 1
-    log.info("Found {} posts within last six months".format(posts_count))
-    #log.info("Stored posts array has size {}".format(len(stored_posts)))
-    #print(', '.join(stored_posts))
-    # returns reversed list so that oldest posts are in list first
     stored_posts.reverse()
     stored_posts = list(filter(None, stored_posts))
+    log.info("Found {} posts within last six months".format(posts_count))
+    log.info("Stored posts array has size {} after filter".format(len(stored_posts)))
+    print(', '.join(stored_posts))
+    # returns reversed list so that oldest posts are in list first
+
     return stored_posts
 
 #postgresql create table

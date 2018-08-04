@@ -239,7 +239,7 @@ def initialize_link_array(reddit):
             if submission not in stored_posts and not check_age_days(submission):
                 # print submission information with reports off
                 #print_info(reddit, submission, 0)
-                stored_posts.append(submission.shortlink)
+                stored_posts.append(submission.id)
                 posts_count += 1
     log.info("Found {} posts within last six months".format(posts_count))
     log.info("Stored posts array has size {}".format(len(stored_posts)))

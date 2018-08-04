@@ -242,6 +242,8 @@ def initialize_link_array(reddit):
                 stored_posts.append(submission)
                 posts_count += 1
     log.info("Found {} posts within last six months".format(posts_count))
+    log.info("Stored posts array has size {}".format(len(stored_posts)))
+    print(', '.join(stored_posts))
     return stored_posts
 
 #postgresql create table

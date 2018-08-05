@@ -61,9 +61,9 @@ def get_url(submission):
     # Regex
     url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
     if url is None:
-        return submission.url
+        return str(submission.url).encode('utf-8')
     else:
-        return url
+        return str(url).encode('utf-8')
 
 def get_musicbrainz_result(artist, song):
     # Checks artist and song info against musicbrainz database
@@ -109,7 +109,7 @@ def get_link_title(reddit, submission):
         if " - Topic" in link_author:
         # YouTube channel is auto-generated "Artist - Topic"
         # so video title is the song name
-            song = link_media_title
+            song = link_media_title.encode('utf-8')
             if "Various Artists" in link_author:
             # YouTube channel is "Various Artist - Topic"
             # so artist name is unknown
@@ -118,14 +118,14 @@ def get_link_title(reddit, submission):
             else:
                 # Regex
                 topic = re.search('(.*) - Topic', author)
-                artist = topic.group(1)
+                artist = topic.group(1).encode('utf-8')
             link_title = [artist, song]
         # If video is normal upload by label or user
         else:
             # Regex
             title = re.search('(?i)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
-                link_title = [link_media_title, None]
+                link_title = [link_media_title.encode('utf-8'), None]
             else:
                 artist = title.group(1).encode('utf-8')
                 song = title.group(2).encode('utf-8')
@@ -144,7 +144,7 @@ def get_post_title(submission):
     title = re.search('(?i)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
-        post_title = [submission.title, ""]
+        post_title = [submission.title.encode('utf-8'), ""]
     else:
         artist = title.group(1).encode('utf-8')
         song = title.group(2).encode('utf-8')
@@ -335,9 +335,11 @@ def check_list(reddit, submission, stored_posts):
     post_title_split = get_post_title(submission)
     post_title = post_title_split[0] + " -- " + post_title_split[1]
     for sub_id in stored_posts:
-        #TRY TEXT MATCH AGAINST BOTH SUBMISSION TITLES/URLS
         old_submission = reddit.submission(id=sub_id)
         old_post_url = get_url(old_submission)
+        
+        # CONVERT TO STR THEN CHECK IN IF
+        
         if post_url in old_post_url or old_post_url in post_url:
             rule_six_month(reddit, submission, old_submission)
         else:

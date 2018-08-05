@@ -11,7 +11,7 @@ import re
 import musicbrainzngs
 
 log = logging.getLogger("bot")
-logging.getLogger("musicbrainzngs")
+log_mb = logger.make_logger("musicbrainzngs")
 
 def check_post(submission):
     # True if not archived and not self.post
@@ -226,29 +226,32 @@ def perform_mod_actions(reddit, rules_violated):
 def initialize_link_array(reddit):
     # Initializes the link array of all past submissions
     # No need to check about removing older posts, since we do that before checking in the main loop anyway
-    if not os.path.isfile("stored_posts.txt"):
+    if not 'stored_posts' in locals():
         stored_posts = []
-    else:
-        with open("stored_posts.txt", "r") as f:
-            stored_posts = f.read()
-            stored_posts = stored_posts.split("\n")
-            stored_posts = list(filter(None, stored_posts))
-    posts_count = 0
+    #else:
+    #    with open("stored_posts.txt", "r") as f:
+    #        stored_posts = f.read()
+    #        stored_posts = stored_posts.split("\n")
+    #        stored_posts = list(filter(None, stored_posts))
+    total_posts = 0
+    stored_count = 0
     for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None):
-        if check_post(submission):
+        total_posts += 1
+        if check_post(submission) and not check_age_days(submission):
             #if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
-            if submission not in stored_posts and not check_age_days(submission):
-                # print submission information with reports off
-                #print_info(reddit, submission, 0)
-                stored_posts.append(submission.id)
+            if submission.id not in [sub.id for sub in stored_posts]:
+                stored_posts.append(submission)
                 posts_count += 1
+    # reverse so oldest are first
     stored_posts.reverse()
     stored_posts = list(filter(None, stored_posts))
-    log.info("Found {} posts within last six months".format(posts_count))
+    log.info("Searhed a total of {} posts".format(total_posts))
+    log.info("Found {} posts within last six months".format(stored_count))
     log.info("Stored posts array has size {} after filter".format(len(stored_posts)))
-    print(', '.join(stored_posts))
-    # returns reversed list so that oldest posts are in list first
-
+    stored_ids = []
+    for sub in stored_posts:
+        stored_ids.append(sub.id)
+    print(', '.join(stored_ids))
     return stored_posts
 
 #postgresql create table
@@ -262,9 +265,8 @@ def initialize_link_array(reddit):
 
 def update_stored_posts(reddit, stored_posts):
     with open("stored_posts.txt", "w") as f:
-        for sub_id in stored_posts:
-            submission = reddit.submission(id=sub_id)
-            f.write(sub_id + "\n")
+        for submission in stored_posts:
+            f.write(submission.id + "\n")
 
 def check_submission(reddit, submission):
     # Check the submission and link information for bad title
@@ -335,45 +337,31 @@ def check_list(reddit, submission, stored_posts):
     post_url = get_url(submission)
     post_title_split = get_post_title(submission)
     post_title = post_title_split[0] + " -- " + post_title_split[1]
-    for sub_id in stored_posts:
-        old_submission = reddit.submission(id=sub_id)
+    # POSSIBILITY OF REVERSE TITLE LIKE *SONG - ARTIST*
+    for old_submission in stored_posts:
+        # CHECK IF OLD SUBMISSION HAS BEEN REMOVED
         old_post_url = get_url(old_submission)
-        
-        # CONVERT TO STR THEN CHECK IN IF
-        
-        if post_url in old_post_url or old_post_url in post_url:
+        if post_url in old_post_url:
             log.info("Url match of \"{}\" and \"{}\"".format(post_url, old_post_url))
             rule_six_month(reddit, submission, old_submission)
-            #break
+            break
         else:
             old_post_title_split = get_post_title(old_submission)
             old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
+            # check both incase one title has extra (descriptors) that weren't caught in get_post_title()
             if post_title in old_post_title or old_post_title in post_title:
                 log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
                 rule_six_month(reddit, submission, old_submission)
-                #break
-    #log_info(submission)
-    stored_posts.append(submission.id)
-            
-    #if get_url(submission) in [get_url(sub) for sub in stored_posts]:
-    #    rule_six_month(reddit, submission, sub)
-    # Check if title already exists
-    #elif get_post_title(submission) in [get_post_title(sub) for sub in stored_posts]:
-    #    rule_six_month(reddit, submission, sub)
-    # print submission information with reports on
-    #if submission not in stored_posts:
-    #    stored_posts.append(submission)
-    #print_info(reddit, submission, 1)
-    return stored_posts
+                break
 
 def purge_old_links(reddit, stored_posts):
     # Removes links archived and removed posts from queue
-    for sub_id in stored_posts:
-        submission = reddit.submission(id=sub_id)
+    for submission in stored_posts:
         if check_archived(submission) or check_removed(submission):
-            stored_posts.remove(sub_id)
+            stored_posts.remove(sub)
         else:
             break
+    stored_posts = list(filter(None, stored_posts))
     return stored_posts
 
 def check_url(url):

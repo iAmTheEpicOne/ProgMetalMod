@@ -43,7 +43,7 @@ log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
 def run_bot():
     
     # progmetalbot useragent and version
-    app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION']
+    app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION'] + "by u/" + settings.USER_TO_MESSAGE
     # praw
     reddit = praw.Reddit(user_agent=app_useragent_version,
                          client_id=os.environ['REDDIT_CLIENT_ID'],
@@ -66,7 +66,7 @@ def run_bot():
     
     log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
     stored_posts = interface.initialize_link_array(reddit)
-    log.info("Start bot for subreddit %s", settings.REDDIT_SUBREDDIT)
+    log.info("Start bot \"{}\" for subreddit {}".format(app_useragent_version, settings.REDDIT_SUBREDDIT)
     while True:
         try:
             log.info("Reading stream of submissions for subreddit %s", settings.REDDIT_SUBREDDIT)
@@ -75,20 +75,21 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
-                if submission.is_self:
-                    post_type = "self"
-                else:
-                    post_type = "link"
-                log.info("Found new {} post {} in subreddit {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
                 old_submission_id = stored_posts[0]
                 if not interface.check_age_max(reddit.submission(id=old_submission_id)):
                     log.info("Purging old posts from list")
                     stored_posts = interface.purge_old_links(reddit, stored_posts)
-                if interface.check_post(submission) and submission not in stored_posts:
+                if interface.check_post(submission) and submission.id not in [sub.id for sub in stored_posts]:
                     #log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
+                    if submission.is_self:
+                        post_type = "self"
+                    else:
+                        post_type = "link"
+                    log.info("Found new {} post {} in subreddit {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
                     bool_post = interface.check_submission(reddit, submission)
                     if bool_post:
-                        stored_posts = interface.check_list(reddit, submission, stored_posts)
+                        interface.check_list(reddit, submission, stored_posts)
+                    stored_posts.append(submission)
                 
                 # Only checks submission for accurate title/link info
                 #if interface.check_post(submission):

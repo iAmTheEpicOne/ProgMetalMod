@@ -5,6 +5,7 @@ import requests
 import settings
 import logging.handlers
 import logging
+import logger
 import os
 import re
 import musicbrainzngs

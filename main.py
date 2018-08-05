@@ -75,12 +75,17 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
-                if not interface.check_age_max(reddit.submission(id=(stored_posts[0]))):
+                if submission.is_self:
+                    post_type = "self"
+                else:
+                    post_type = "link"
+                log.info("Found new {} post {} in subreddit {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
+                old_submission_id = stored_posts[0]
+                if not interface.check_age_max(reddit.submission(id=old_submission_id)):
                     log.info("Purging old posts from list")
                     stored_posts = interface.purge_old_links(reddit, stored_posts)
-                if interface.check_post(submission) and submission not in stored_posts and interface.check_age_days(submission):
-                    # Remove links > MAX_REMEMBER_LIMIT
-                    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
+                if interface.check_post(submission) and submission not in stored_posts:
+                    #log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
                     bool_post = interface.check_submission(reddit, submission)
                     if bool_post:
                         stored_posts = interface.check_list(reddit, submission, stored_posts)

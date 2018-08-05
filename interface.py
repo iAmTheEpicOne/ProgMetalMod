@@ -341,12 +341,16 @@ def check_list(reddit, submission, stored_posts):
         # CONVERT TO STR THEN CHECK IN IF
         
         if post_url in old_post_url or old_post_url in post_url:
+            log.info("Url match of \"{}\" and \"{}\"".format(post_url, old_post_url))
             rule_six_month(reddit, submission, old_submission)
+            #break
         else:
             old_post_title_split = get_post_title(old_submission)
             old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
             if post_title in old_post_title or old_post_title in post_title:
+                log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
                 rule_six_month(reddit, submission, old_submission)
+                #break
     #log_info(submission)
     stored_posts.append(submission.id)
             

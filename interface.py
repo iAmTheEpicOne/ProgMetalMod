@@ -241,7 +241,7 @@ def initialize_link_array(reddit):
             #if submission.url not in [sub.url for sub in stored_posts] or submission not in stored_posts:
             if submission.id not in [sub.id for sub in stored_posts]:
                 stored_posts.append(submission)
-                posts_count += 1
+                stored_count += 1
     # reverse so oldest are first
     stored_posts.reverse()
     stored_posts = list(filter(None, stored_posts))

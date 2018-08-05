@@ -11,7 +11,7 @@ import re
 import musicbrainzngs
 
 log = logging.getLogger("bot")
-log_mb = logger.make_logger("musicbrainzngs")
+log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
 
 def check_post(submission):
     # True if not archived and not self.post

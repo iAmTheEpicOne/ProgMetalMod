@@ -61,9 +61,9 @@ def get_url(submission):
     # Regex
     url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
     if url is None:
-        return str(submission.url).encode('utf-8')
+        return submission.url.encode('utf-8')
     else:
-        return str(url).encode('utf-8')
+        return url.group(1).encode('utf-8')
 
 def get_musicbrainz_result(artist, song):
     # Checks artist and song info against musicbrainz database

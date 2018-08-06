@@ -77,7 +77,8 @@ def check_self_promotion(submission):
     # Return True if username is in submission title for possible self-promotion
     post_title = get_post_title(submission)
     post_title_replace = post_title[0].replace(" ", "")
-    if submission.author.lower() in post_title_replace.lower():
+    user = str(submission.author)
+    if user.lower() in post_title_replace.lower():
         log.info("Username \"{}\" matches Title \"{}\"".format(submission.author, post_title[0]))
         return True
     else:

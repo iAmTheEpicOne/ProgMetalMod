@@ -310,7 +310,7 @@ def initialize_link_array(reddit):
     stored_posts = list(filter(None, stored_posts))
     log.info("Searhed a total of {} posts".format(total_posts))
     log.info("Found {} posts within last six months".format(stored_count))
-    log.info("Stored posts array has size {} after filter".format(len(stored_posts)))
+    #log.info("Stored posts array has size {} after filter".format(len(stored_posts)))
     #stored_ids = []
     #for sub in stored_posts:
     #    stored_ids.append(sub.id)
@@ -338,17 +338,17 @@ def check_selfpost(reddit, submission):
 def check_submission(reddit, submission):
     # Check the submission and link information for album stream, self-promotion, and bad title formatting
     # Artist and Song name verification happens here with checks against submission title
-    if check_album_stream(submission):
-        # does not include spotify playlists as album streams
-        log.info("Submission {} is an album stream".format(submission.id))
-        rule_album_stream(reddit, submission)
-        # Submission will not be cross-checked with list
-        return False
     link_domain = get_domain(submission)
     if not check_domain(link_domain):
         # link domain is not youtube, spotify, bandcamp, or soundcloud
         # could check domain against secondary list including facebook, twitter, metal magazines, etc. for different handling
         log.info("Link submission to {}".format(link_domain))
+        # Submission will not be cross-checked with list
+        return False
+    if check_album_stream(submission):
+        # does not include spotify playlists as album streams
+        log.info("Submission {} is an album stream".format(submission.id))
+        rule_album_stream(reddit, submission)
         # Submission will not be cross-checked with list
         return False
     #rules_violated = []

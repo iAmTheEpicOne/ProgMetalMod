@@ -345,12 +345,15 @@ def check_submission(reddit, submission):
         log.info("Link submission to {}".format(link_domain))
         # Submission will not be cross-checked with list
         return False
-    if check_album_stream(submission):
-        # does not include spotify playlists as album streams
-        log.info("Submission {} is an album stream".format(submission.id))
-        rule_album_stream(reddit, submission)
-        # Submission will not be cross-checked with list
-        return False
+    try:
+        if check_album_stream(submission):
+            # does not include spotify playlists as album streams
+            log.info("Submission {} is an album stream".format(submission.id))
+            rule_album_stream(reddit, submission)
+            # Submission will not be cross-checked with list
+            return False
+    except Exception as e:
+        log.error("Exception in submission stream: %s", e, exc_info=True)
     #rules_violated = []
     post_title = submission.title
     post_info = get_post_title(submission)

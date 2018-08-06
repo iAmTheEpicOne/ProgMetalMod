@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 import hashlib
 import datetime
@@ -158,7 +156,7 @@ def get_link_title(reddit, submission):
         # If video is normal upload by label or user
         else:
             # Regex
-            title = re.search('(?i)^(.*?)\s?(?:-{1,2}|—|–)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
+            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title.encode('utf-8'))
             if title is None:
                 link_title = [link_media_title.encode('utf-8'), None]
             else:
@@ -176,7 +174,7 @@ def get_post_title(submission):
     # REGEX OVERLOAD INCOMING
     # Use regex string in ' ' on regexr.com and check out all the titles it catches!
     # re.search will store 'Artist' in title.group(1) and 'Song' in title.group(2)
-    title = re.search('(?i)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|—|–)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
+    title = re.search('(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title.encode('utf-8'))
     if title is None:
         #ah fuck it didn't work
         post_title = [submission.title.encode('utf-8'), ""]
@@ -346,15 +344,12 @@ def check_submission(reddit, submission):
         log.info("Link submission to {}".format(link_domain))
         # Submission will not be cross-checked with list
         return False
-    try:
-        if check_album_stream(submission):
-            # does not include spotify playlists as album streams
-            log.info("Submission {} is an album stream".format(submission.id))
-            rule_album_stream(reddit, submission)
-            # Submission will not be cross-checked with list
-            return False
-    except Exception as e:
-        log.error("Exception in submission stream: %s", e, exc_info=True)
+    if check_album_stream(submission):
+        # does not include spotify playlists as album streams
+        log.info("Submission {} is an album stream".format(submission.id))
+        rule_album_stream(reddit, submission)
+        # Submission will not be cross-checked with list
+        return False
     #rules_violated = []
     post_title = submission.title
     post_info = get_post_title(submission)

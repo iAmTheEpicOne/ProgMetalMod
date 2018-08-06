@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import time
 import hashlib
 import datetime
@@ -9,6 +11,7 @@ import logger
 import os
 import re
 import musicbrainzngs
+
 
 log = logging.getLogger("bot")
 #log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
@@ -153,7 +156,7 @@ def get_link_title(reddit, submission):
         # If video is normal upload by label or user
         else:
             # Regex
-            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|—|–)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title.encode('utf-8'))
+            title = re.search('(?i)^(.*?)\s?(?:-{1,2}|—|–)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title.encode('utf-8'), None]
             else:
@@ -171,7 +174,7 @@ def get_post_title(submission):
     # REGEX OVERLOAD INCOMING
     # Use regex string in ' ' on regexr.com and check out all the titles it catches!
     # re.search will store 'Artist' in title.group(1) and 'Song' in title.group(2)
-    title = re.search('(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|—|–)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title.encode('utf-8'))
+    title = re.search('(?i)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|—|–)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
         post_title = [submission.title.encode('utf-8'), ""]

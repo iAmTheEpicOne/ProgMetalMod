@@ -332,7 +332,7 @@ def update_stored_posts(reddit, stored_posts):
 
 def check_selfpost(reddit, submission):
     # Check a self.subreddit submission
-    
+    pass
 
 def check_submission(reddit, submission):
     # Check the submission and link information for album stream, self-promotion, and bad title formatting

@@ -43,7 +43,7 @@ log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
 def run_bot():
     
     # progmetalbot useragent and version
-    app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION'] + "by u/" + settings.USER_TO_MESSAGE
+    app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION'] + " by u/" + settings.USER_TO_MESSAGE
     # praw
     reddit = praw.Reddit(user_agent=app_useragent_version,
                          client_id=os.environ['REDDIT_CLIENT_ID'],

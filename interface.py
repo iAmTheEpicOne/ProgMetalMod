@@ -55,7 +55,8 @@ def check_album_stream(submission):
     # Returns True if url contains "album"
     domain = get_domain(submission)
     if domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
-        result = re.search('(full.?album|album.?stream)', submission.media.oembed.title)
+        title = submission.media.oembed.title
+        result = re.search('(?i)(full.?album|album.?stream)', title)
         if result is None:
             result = re.search('(\.com\/playlist\?)', submission.url)
             if result is None:
@@ -310,10 +311,10 @@ def initialize_link_array(reddit):
     log.info("Searhed a total of {} posts".format(total_posts))
     log.info("Found {} posts within last six months".format(stored_count))
     log.info("Stored posts array has size {} after filter".format(len(stored_posts)))
-    stored_ids = []
-    for sub in stored_posts:
-        stored_ids.append(sub.id)
-    print(', '.join(stored_ids))
+    #stored_ids = []
+    #for sub in stored_posts:
+    #    stored_ids.append(sub.id)
+    #print(', '.join(stored_ids))
     return stored_posts
 
 #postgresql create table

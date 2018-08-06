@@ -428,7 +428,9 @@ def check_list(reddit, submission, stored_posts):
 def purge_old_links(reddit, stored_posts):
     # Removes links archived and removed posts from queue
     for submission in stored_posts:
-        if check_archived(submission) """or check_removed(submission)""": #no check_removed until mod privileges 
+        # check_removed is unused at the moment until mod privileges
+        #if check_archived(submission) or check_removed(submission):
+        if check_archived(submission): 
             stored_posts.remove(sub)
         else:
             break

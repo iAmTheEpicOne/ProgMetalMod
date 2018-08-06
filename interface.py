@@ -338,7 +338,6 @@ def check_selfpost(reddit, submission):
 def check_submission(reddit, submission):
     # Check the submission and link information for album stream, self-promotion, and bad title formatting
     # Artist and Song name verification happens here with checks against submission title
-    print(submission.title)
     link_domain = get_domain(submission)
     if not check_domain(link_domain):
         # link domain is not youtube, spotify, bandcamp, or soundcloud

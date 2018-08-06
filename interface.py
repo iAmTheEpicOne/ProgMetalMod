@@ -344,12 +344,12 @@ def check_submission(reddit, submission):
         log.info("Link submission to {}".format(link_domain))
         # Submission will not be cross-checked with list
         return False
-    if check_album_stream(submission):
+    #if check_album_stream(submission):
         # does not include spotify playlists as album streams
-        log.info("Submission {} is an album stream".format(submission.id))
-        rule_album_stream(reddit, submission)
+    #    log.info("Submission {} is an album stream".format(submission.id))
+    #    rule_album_stream(reddit, submission)
         # Submission will not be cross-checked with list
-        return False
+    #    return False
     #rules_violated = []
     post_title = submission.title
     post_info = get_post_title(submission)
@@ -361,8 +361,8 @@ def check_submission(reddit, submission):
     else:
         post_artist = post_info[0]
         post_song = post_info[1]
-    if check_self_promotion(submission):
-        rule_self_promotion(submission)
+    #if check_self_promotion(submission):
+    #    rule_self_promotion(submission)
         # Currently keeps checking the post for other violations.
         #   No proper way to consolidate rule violations into one report method
         #   It's possible that the self-promotion report will be overwritten with another report during check

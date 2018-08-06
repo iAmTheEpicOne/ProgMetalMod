@@ -308,7 +308,7 @@ def initialize_link_array(reddit):
     # reverse so oldest are first
     stored_posts.reverse()
     stored_posts = list(filter(None, stored_posts))
-    log.info("Searhed a total of {} posts".format(total_posts))
+    #log.info("Searched a total of {} posts".format(total_posts))
     log.info("Found {} posts within last six months".format(stored_count))
     #log.info("Stored posts array has size {} after filter".format(len(stored_posts)))
     #stored_ids = []
@@ -338,6 +338,7 @@ def check_selfpost(reddit, submission):
 def check_submission(reddit, submission):
     # Check the submission and link information for album stream, self-promotion, and bad title formatting
     # Artist and Song name verification happens here with checks against submission title
+    print(submission.title)
     link_domain = get_domain(submission)
     if not check_domain(link_domain):
         # link domain is not youtube, spotify, bandcamp, or soundcloud

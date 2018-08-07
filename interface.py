@@ -156,7 +156,7 @@ def get_link_title(reddit, submission):
         # If video is normal upload by label or user
         else:
             # Regex
-            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:review|album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
+            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:full|video|instrumental|review|album|official|premiere?|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title, None]
             else:
@@ -174,10 +174,10 @@ def get_post_title(submission):
     # REGEX OVERLOAD INCOMING
     # Use regex string in ' ' on regexr.com and check out all the titles it catches!
     # re.search will store 'Artist' in title.group(1) and 'Song' in title.group(2)
-    title = re.search('(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
+    title = re.search('(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premiere?|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
-        post_title = [submission.title, ""]
+        post_title = [submission.title, None]
     else:
         artist = title.group(1)
         song = title.group(2)
@@ -366,8 +366,9 @@ def check_submission(reddit, submission):
     #rules_violated = []
     post_title = submission.title
     post_info = get_post_title(submission)
-    if post_info[1] is "":
+    if post_info[1] is None:
         # Report submission for bad title rule violation
+        # Could do second regex check for "Song by Artist" and continue from there???
         rule_bad_title(reddit, submission)
         # Submission will not be cross-checked with list
         return False
@@ -390,7 +391,7 @@ def check_submission(reddit, submission):
         if link_artist is None:
             # auto-generated YouTube channel "Various Artist - Topic"
             # artist unknown until YouTube API enabled, song is known
-            if link_song is not post_song:
+            if link_song.lower() not in post_song.lower():
                 # Report submission for link info not matching post info
                 log.info("Song \"{}\" does not match Linked Song \"{}\"".format(post_song, link_song))
                 rule_bad_title_report(reddit, submission)
@@ -403,6 +404,8 @@ def check_submission(reddit, submission):
                 log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{}\"".format(post_artist, post_song, video_title))
                 rule_bad_title_report(reddit, submission)
         elif post_artist.lower() not in link_artist.lower() or post_song.lower() not in link_song.lower():
+            # reverse check to be double sure in case of extra text in titles
+            if link_artist.lower() not in post_artist.lower() or link_song.lower() not in post_song.lower():
                 # Report submission for artist or song in post title not found in link title
                 log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
                 rule_bad_title_report(reddit, submission)

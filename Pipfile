@@ -13,4 +13,4 @@ musicbrainzngs = "*"
 boto3 = "*"
 
 [requires]
-python_version = "3.6.5"
+python_full_version = "3.6.5"

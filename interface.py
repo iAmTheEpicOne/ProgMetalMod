@@ -156,7 +156,7 @@ def get_link_title(reddit, submission):
         # If video is normal upload by label or user
         else:
             # Regex
-            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
+            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:review|album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title, None]
             else:
@@ -402,9 +402,9 @@ def check_submission(reddit, submission):
                 # Report submission for artist or song in post title not found in link title
                 log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{}\"".format(post_artist, post_song, video_title))
                 rule_bad_title_report(reddit, submission)
-        elif post_artist.lower() is not link_artist.lower() or post_song.lower() is not link_song.lower():
+        elif post_artist.lower() not in link_artist.lower() or post_song.lower() not in link_song.lower():
                 # Report submission for artist or song in post title not found in link title
-                log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{}\" - \"{}\"".format(post_artist, post_song, link_artist, link_song))
+                log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
                 rule_bad_title_report(reddit, submission)
     if get_musicbrainz_result(post_artist, post_song) is False:
         report_musicbrainz(reddit, submission)

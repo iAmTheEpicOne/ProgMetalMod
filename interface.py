@@ -375,7 +375,7 @@ def check_submission(reddit, submission):
         post_artist = post_info[0]
         post_song = post_info[1]
     if check_self_promotion(submission):
-        rule_self_promotion(submission)
+        rule_self_promotion(reddit, submission)
         # Currently keeps checking the post for other violations.
         #   No proper way to consolidate rule violations into one report method
         #   It's possible that the self-promotion report will be overwritten with another report during check

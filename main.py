@@ -11,6 +11,8 @@ import os
 import pprint
 #import psycopg2
 import boto3
+import platform
+
 
 # The time in seconds the bot should sleep until it checks again.
 SLEEP = 600
@@ -63,6 +65,7 @@ def run_bot():
     #s3 = boto3.resource('s3')
     # subreddit
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
+    log.info("Python platform: {}".format(platform.python_version()))
     log.info("Starting bot \"{}\" for subreddit {}".format(app_useragent_version, settings.REDDIT_SUBREDDIT))
     log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
     stored_posts = interface.initialize_link_array(reddit)

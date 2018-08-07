@@ -10,7 +10,6 @@ import os
 import re
 import musicbrainzngs
 
-
 log = logging.getLogger("bot")
 #log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
 
@@ -294,7 +293,7 @@ def initialize_link_array(reddit):
     last_submission = stored_posts[stored_count - 1]
     last_id = "t3_" + str(last_submission.id)
     current_time = int(time.time())
-    earliest_time = int(datetime.datetime.now().timestamp() - 86400*181)
+    earliest_time = current_time - 86400*181
     while stored_posts[stored_count-1].created_utc > earliest_time:
         for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(after=last_id, limit=None):
             total_posts += 1

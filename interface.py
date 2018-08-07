@@ -94,9 +94,9 @@ def get_url(submission):
     # Regex
     url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
     if url is None:
-        return submission.url.encode('utf-8')
+        return submission.url
     else:
-        return url.group(1).encode('utf-8')
+        return url.group(1)
 
 def get_musicbrainz_result(artist, song):
     # Checks artist and song info against musicbrainz database
@@ -124,15 +124,15 @@ def get_link_title(reddit, submission):
         description = submission.media['oembed']['description']
         # Regex
         title = re.search('(.*), a song by (.*) on Spotify', description)
-        song = title.group(1).encode('utf-8')
-        artist = title.group(2).encode('utf-8')
+        song = title.group(1)
+        artist = title.group(2)
         link_title = [artist, song]
     elif domain is "bandcamp.com":
         description = submission.media['oembed']['title']
         # Regex
         title = re.search('(.*), by (.*)', description)
-        song = title.group(1).encode('utf-8')
-        artist = title.group(2).encode('utf-8')
+        song = title.group(1)
+        artist = title.group(2)
         link_title = [artist, song]
     elif domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
     # Need to add YouTube API for better info
@@ -142,7 +142,7 @@ def get_link_title(reddit, submission):
         if " - Topic" in link_author:
         # YouTube channel is auto-generated "Artist - Topic"
         # so video title is the song name
-            song = link_media_title.encode('utf-8')
+            song = link_media_title
             if "Various Artists" in link_author:
             # YouTube channel is "Various Artist - Topic"
             # so artist name is unknown
@@ -151,17 +151,17 @@ def get_link_title(reddit, submission):
             else:
                 # Regex
                 topic = re.search('(.*) - Topic', author)
-                artist = topic.group(1).encode('utf-8')
+                artist = topic.group(1)
             link_title = [artist, song]
         # If video is normal upload by label or user
         else:
             # Regex
             title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:album|official|premiere|lyric|playthrough|single).*|$|\n)', link_media_title)
             if title is None:
-                link_title = [link_media_title.encode('utf-8'), None]
+                link_title = [link_media_title, None]
             else:
-                artist = title.group(1).encode('utf-8')
-                song = title.group(2).encode('utf-8')
+                artist = title.group(1)
+                song = title.group(2)
                 link_title = [artist, song]
     elif domain is "soundcloud.com":
     # Need to add SoundCloud API for info
@@ -177,10 +177,10 @@ def get_post_title(submission):
     title = re.search('(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premier|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
     if title is None:
         #ah fuck it didn't work
-        post_title = [submission.title.encode('utf-8'), ""]
+        post_title = [submission.title, ""]
     else:
-        artist = title.group(1).encode('utf-8')
-        song = title.group(2).encode('utf-8')
+        artist = title.group(1)
+        song = title.group(2)
         post_title = [artist, song]
     return post_title
     #title = re.search('^.+?\s(?:-{1,2}|\u2014|\u2013)\s.*$', submission.title)

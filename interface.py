@@ -291,11 +291,11 @@ def initialize_link_array(reddit):
                 stored_posts.append(submission)
                 stored_count += 1
     last_submission = stored_posts[stored_count - 1]
-    last_id = "t3_" + str(last_submission.id)
+    last_id = last_submission.id
     current_time = int(time.time())
     earliest_time = current_time - 86400*181
     while stored_posts[stored_count-1].created_utc > earliest_time:
-        for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(after=last_id, limit=None):
+        for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None, params={"after" : "t3_{}".format(last_id)}):
             total_posts += 1
             if check_post(submission) and not check_age_days(submission):
                 if submission.id not in [sub.id for sub in stored_posts]:

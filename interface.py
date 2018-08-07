@@ -416,9 +416,12 @@ def check_submission(reddit, submission):
         elif post_artist.lower() not in link_artist.lower() or post_song.lower() not in link_song.lower():
             # reverse check to be double sure in case of extra text in titles
             if link_artist.lower() not in post_artist.lower() or link_song.lower() not in post_song.lower():
-                # Report submission for artist or song in post title not found in link title
-                log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
-                rule_bad_title_report(reddit, submission)
+                # a 3rd check for a final pass at a bad link title vs post title
+                link_title = submission.media['oembed']['title']
+                if post_artist.lower() not in link_title.lower() or post_song.lower() not in link_title.lower():
+                    # Report submission for artist or song in post title not found in link title
+                    log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
+                    rule_bad_title_report(reddit, submission)
     if get_musicbrainz_result(post_artist, post_song) is False:
         report_musicbrainz(reddit, submission)
     log.info("Domain: {:14} Song submitted: {} - {}".format(link_domain, post_artist, post_song))

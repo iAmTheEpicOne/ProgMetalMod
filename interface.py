@@ -72,11 +72,12 @@ def check_album_stream(submission):
 
 def check_self_promotion(submission):
     # Return True if username is in submission title for possible self-promotion
-    post_title = get_post_title(submission)
-    post_title_replace = post_title[0].replace(" ", "")
+    post_title_array = get_post_title(submission)
+    post_title = str(post_title_array[0])
+    post_title_replace = post_title.replace(" ", "")
     user = str(submission.author)
     if user.lower() in post_title_replace.lower():
-        log.info("Username \"{}\" matches Title \"{}\"".format(submission.author, post_title[0]))
+        log.info("Username \"{}\" matches Title \"{}\"".format(submission.author, post_title))
         return True
     else:
         return False

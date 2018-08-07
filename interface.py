@@ -52,7 +52,7 @@ def check_album_stream(submission):
     # Returns True if url contains "album"
     domain = get_domain(submission)
     if domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
-        title = submission.media.oembed.title
+        title = submission.media['oembed']['title']
         result = re.search('(?i)(full.?album|album.?stream)', title)
         if result is None:
             result = re.search('(\.com\/playlist\?)', submission.url)
@@ -120,14 +120,14 @@ def get_link_title(reddit, submission):
     #   link_title can then be used as crosscheck with reddit post title info
     domain = get_domain(submission)
     if domain is "spotify.com":
-        description = submission.media.oembed.description
+        description = submission.media['oembed']['description']
         # Regex
         title = re.search('(.*), a song by (.*) on Spotify', description)
         song = title.group(1).encode('utf-8')
         artist = title.group(2).encode('utf-8')
         link_title = [artist, song]
     elif domain is "bandcamp.com":
-        description = submission.media.oembed.title
+        description = submission.media['oembed']['title']
         # Regex
         title = re.search('(.*), by (.*)', description)
         song = title.group(1).encode('utf-8')
@@ -136,7 +136,7 @@ def get_link_title(reddit, submission):
     elif domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
     # Need to add YouTube API for better info
     # Currently cannot access a video's description
-        link_author = submission.media.oembed.author_name
+        link_author = submission.media['oembed']['author_name']
         link_media_title = submission.media['oembed']['title']
         if " - Topic" in link_author:
         # YouTube channel is auto-generated "Artist - Topic"

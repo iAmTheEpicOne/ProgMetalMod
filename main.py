@@ -88,7 +88,7 @@ def run_bot():
                         post_type = "self"
                     else:
                         post_type = "link"
-                    log.info("Found new {} post {} in subreddit {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
+                    log.info("Found new {} post: {} in subreddit: {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
                     #print(vars(submission))
                     bool_post = interface.check_submission(reddit, submission)
                     if bool_post:

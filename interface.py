@@ -77,7 +77,7 @@ def check_self_promotion(submission):
     post_title_replace = post_title.replace(" ", "")
     user = str(submission.author)
     if user.lower() in post_title_replace.lower():
-        log.info("Username \"{}\" matches Title \"{}\"".format(submission.author, post_title))
+        log.info("Username: \"{}\" matches Title: \"{}\"".format(submission.author, post_title))
         return True
     else:
         return False
@@ -403,7 +403,7 @@ def check_submission(reddit, submission):
             # artist unknown until YouTube API enabled, song is known
             if link_song.lower() not in post_song.lower():
                 # Report submission for link info not matching post info
-                log.info("Song \"{}\" does not match Linked Song \"{}\"".format(post_song, link_song))
+                log.info("Song: \"{}\" does not match Linked Song: \"{}\"".format(post_song, link_song))
                 rule_bad_title_report(reddit, submission)
         elif link_song is None:
             # YouTube video title didn't match regex, so link_artist is full video title
@@ -411,7 +411,7 @@ def check_submission(reddit, submission):
             video_title = link_artist
             if post_artist not in video_title or post_song not in video_title:
                 # Report submission for artist or song in post title not found in link title
-                log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{}\"".format(post_artist, post_song, video_title))
+                log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{}\"".format(post_artist, post_song, video_title))
                 rule_bad_title_report(reddit, submission)
         elif post_artist.lower() not in link_artist.lower() or post_song.lower() not in link_song.lower():
             # reverse check to be double sure in case of extra text in titles
@@ -420,7 +420,7 @@ def check_submission(reddit, submission):
                 link_title = submission.media['oembed']['title']
                 if post_artist.lower() not in link_title.lower() or post_song.lower() not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title
-                    log.info("Artist \"{}\" or Song \"{}\" does not match Title \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
+                    log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
                     rule_bad_title_report(reddit, submission)
     if get_musicbrainz_result(post_artist, post_song) is False:
         report_musicbrainz(reddit, submission)
@@ -439,7 +439,7 @@ def check_list(reddit, submission, stored_posts):
         post_title = post_title_split[0]
     else:
         post_title = post_title_split[0] + " -- " + post_title_split[1]
-    log.info("Comparing url {} and title {} with older posts".format(post_url, post_title))
+    log.info("Cross-checking Url: \"{}\" and Title: \"{}\" with older posts".format(post_url, post_title))
     # POSSIBILITY OF REVERSE TITLE LIKE *SONG - ARTIST*
     for old_submission in stored_posts:
         # CHECK IF OLD SUBMISSION HAS BEEN REMOVED

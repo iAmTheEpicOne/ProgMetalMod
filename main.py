@@ -88,12 +88,13 @@ def run_bot():
                         post_type = "self"
                     else:
                         post_type = "link"
-                    log.info("Found new {} post: {} in subreddit: {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
+                    log.info("Found new {} submission: {} in subreddit: {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
                     #print(vars(submission))
                     bool_post = interface.check_submission(reddit, submission)
                     if bool_post:
                         interface.check_list(reddit, submission, stored_posts)
                     stored_posts.append(submission)
+                    log.info("Checks complete for submission: {}".format(submission))
                 
                 # Only checks submission for accurate title/link info
                 #if interface.check_post(submission):

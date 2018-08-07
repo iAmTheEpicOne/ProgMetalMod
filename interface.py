@@ -150,7 +150,7 @@ def get_link_title(reddit, submission):
                 artist = None
             else:
                 # Regex
-                topic = re.search('(.*) - Topic', author)
+                topic = re.search('(.*) - Topic', link_author)
                 artist = topic.group(1)
             link_title = [artist, song]
         # If video is normal upload by label or user

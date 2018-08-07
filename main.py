@@ -67,9 +67,9 @@ def run_bot():
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     #log.info("Python platform: {}".format(platform.python_version()))
     log.info("Starting bot \"{}\" for subreddit {}".format(app_useragent_version, settings.REDDIT_SUBREDDIT))
+    interface.unhide_posts(reddit)
     log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
     stored_posts = interface.initialize_link_array(reddit)
-    interface.unhide_posts(reddit)
     while True:
         try:
             log.info("Reading stream of submissions for subreddit %s", settings.REDDIT_SUBREDDIT)

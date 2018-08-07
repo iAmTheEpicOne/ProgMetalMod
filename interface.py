@@ -422,7 +422,10 @@ def check_list(reddit, submission, stored_posts):
     # Check if exact url already exists
     post_url = get_url(submission)
     post_title_split = get_post_title(submission)
-    post_title = post_title_split[0] + " -- " + post_title_split[1]
+    if post_title_split[1] is None:
+        post_title = post_title_split[0]
+    else:
+        post_title = post_title_split[0] + " -- " + post_title_split[1]
     log.info("Comparing url {} and title {} with older posts".format(post_url, post_title))
     # POSSIBILITY OF REVERSE TITLE LIKE *SONG - ARTIST*
     for old_submission in stored_posts:
@@ -434,7 +437,10 @@ def check_list(reddit, submission, stored_posts):
             break
         else:
             old_post_title_split = get_post_title(old_submission)
-            old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
+            if old_post_title_split[1] is None:
+                old_post_title = old_post_title_split[0]
+            else:
+                old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
             if post_title in old_post_title or old_post_title in post_title:
                 log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
@@ -464,9 +470,9 @@ def log_info(submission):
     domain = get_domain(submission)
     title = get_post_title(submission)
     # possibly format title with .title() or capwords()
-    if title[1] is "":
+    if title[1] is None:
         title_str = title[0]
     else:
-        title_str = title[0] + " - " + title[1]
+        title_str = title[0] + " -- " + title[1]
     log.info("Link: {}  Domain: {:14}  Title: {}".format(submission, domain, title_str))
     

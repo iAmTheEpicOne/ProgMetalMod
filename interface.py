@@ -271,6 +271,16 @@ def perform_mod_actions(reddit, rules_violated):
             # six month repost
                 rule_six_month(reddit, submission, rule[1])
 
+def unhide_posts(reddit):
+    unhidden_count = 0
+    while True:
+        posts = [post for post in reddit.user.me().hidden(limit=40)]
+        if not posts:
+            log.info("{} posts have been unhidden.".format(unhidden_count))
+            break
+        posts[0].unhide(other_submissions=posts[1:40])
+        unhidden_count += 1
+
 def initialize_link_array(reddit):
     # Initializes the link array of all past submissions
     # No need to check about removing older posts, since we do that before checking in the main loop anyway

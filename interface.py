@@ -292,9 +292,9 @@ def initialize_link_array(reddit):
                 stored_posts.append(submission)
                 stored_count += 1
     last_submission = stored_posts[stored_count - 1]
-    last_id = str(last_submission.id)
+    last_id = "t3_" + str(last_submission.id)
     current_time = int(time.time())
-    earliest_time = int((datetime.datetime.now() - datetime.timedelta(days=181)).timestamp())
+    earliest_time = int(datetime.datetime.now().timestamp() - 86400*181)
     while stored_posts[stored_count-1].created_utc > earliest_time:
         for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(after=last_id, limit=None):
             total_posts += 1

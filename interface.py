@@ -294,15 +294,15 @@ def initialize_link_array(reddit):
     last_id = last_submission.id
     current_time = int(time.time())
     earliest_time = current_time - 86400*181
-    while stored_posts[stored_count-1].created_utc > earliest_time:
-        for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None, params={"after" : "t3_{}".format(last_id)}):
-            total_posts += 1
-            if check_post(submission) and not check_age_days(submission):
-                if submission.id not in [sub.id for sub in stored_posts]:
-                    stored_posts.append(submission)
-                    stored_count += 1
-                if submission.created_utc < earliest_time:
-                    break
+    #while stored_posts[stored_count-1].created_utc > earliest_time:
+    for submission in reddit.subreddit(settings.REDDIT_SUBREDDIT).new(limit=None, params={"after" : "t3_{}".format(last_id)}):
+        total_posts += 1
+        if check_post(submission) and not check_age_days(submission):
+            if submission.id not in [sub.id for sub in stored_posts]:
+                stored_posts.append(submission)
+                stored_count += 1
+            if submission.created_utc < earliest_time:
+                break
     
     # was going to try this, but .submissions() is deprecated....
     #current_time = int(time.time())

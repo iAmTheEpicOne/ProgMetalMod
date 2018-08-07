@@ -92,7 +92,7 @@ def check_removed(submission):
 def get_url(submission):
     # Get url
     # Regex
-    url = re.search('(?:youtube\.com|youtu\.be)(?:=|\/).*(.{11})', submission.url)
+    url = re.search('(?:youtube\.com.*?=|youtu\.be\/)(.{11})', submission.url)
     if url is None:
         return submission.url
     else:

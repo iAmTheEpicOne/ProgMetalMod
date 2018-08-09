@@ -491,7 +491,7 @@ def check_list(reddit, submission, stored_posts):
     context = 'title'
     listing = get_reddit_search_listing(context, query)
     for result in listing:
-        if not check_archived(result) and result.id is not submission.id
+        if not check_archived(result) and result.id is not submission.id:
             result_title_split = get_post_title(old_submission)
             if result_title_split[1] is None:
                 result_title = result_title_split[0]

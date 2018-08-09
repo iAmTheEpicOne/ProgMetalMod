@@ -1,8 +1,6 @@
 #!/usr/bin/python
 import praw
 import musicbrainzngs
-import gdata.youtube
-import gdata.youtube.service
 import time
 import interface
 import settings

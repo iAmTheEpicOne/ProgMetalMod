@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import praw
 import musicbrainzngs
+import gdata.youtube
+import gdata.youtube.service
 import time
 import interface
 import settings
-#import logging.handlers
 import logging
 import logger
 import os
@@ -17,54 +18,44 @@ import boto3
 # The time in seconds the bot should sleep until it checks again.
 SLEEP = 600
 
-
 # LOGGING CONFIGURATION
 LOG_FILENAME = "bot.log"
 LOG_FILE_BACKUPCOUNT = 5
 LOG_FILE_MAXSIZE = 1024 * 256
 
-
 # LOGGING SETUP
 log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
-#logging.basicConfig(level=logging.DEBUG)
-#log = logging.getLogger("bot").setLevel(logging.INFO)
-#log_formatter = logging.Formatter('%(levelname)s: %(message)s')
-#log_formatter_file = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-#log_stderrHandler = logging.StreamHandler()
-#log_stderrHandler.setFormatter(log_formatter)
-#log.addHandler(log_stderrHandler)
-#if LOG_FILENAME is not None:
-#	log_fileHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=LOG_FILE_MAXSIZE,
-#	                                                       backupCount=LOG_FILE_BACKUPCOUNT)
-#	log_fileHandler.setFormatter(log_formatter_file)
-#	log.addHandler(log_fileHandler)
-# Musicbrainz logging
-#logging.getLogger("musicbrainzngs").setLevel(logging.INFO)
 
 # MAIN PROCEDURE
 def run_bot():
     
-    # progmetalbot useragent and version
+    # -- progmetalbot useragent and version --
     app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION'] + " by u/" + settings.USER_TO_MESSAGE
-    # praw
+    # -- praw --
     reddit = praw.Reddit(user_agent=app_useragent_version,
                          client_id=os.environ['REDDIT_CLIENT_ID'],
                          client_secret=os.environ['REDDIT_CLIENT_SECRET'],
                          password=os.environ['REDDIT_PASSWORD'],
                          username=os.environ['REDDIT_USERNAME'])
-    # musicbrainz
+    subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
+    # -- musicbrainz --
     musicbrainzngs.auth(os.environ['MUSICBRAINZ_USERNAME'],
                         os.environ['MUSICBRAINZ_PASSWORD'])
     musicbrainzngs.set_useragent(os.environ['APP_USERAGENT'],
                                  os.environ['APP_VERSION'],
                                  os.environ['CONTACT_EMAIL'])
-    # postgresql
+    # -- youtube --
+    
+    # -- spotify --
+    
+    # -- last.fm --
+    
+    # -- postgresql --
     #DATABASE_URL = os.environ['DATABASE_URL']
     #conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    # cloudcube AWS
+    # -- cloudcube AWS -- 
     #s3 = boto3.resource('s3')
-    # subreddit
-    subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
+
     #log.info("Python platform: {}".format(platform.python_version()))
     log.info("Starting bot \"{}\" for subreddit {}".format(app_useragent_version, settings.REDDIT_SUBREDDIT))
     interface.unhide_posts(reddit)

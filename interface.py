@@ -39,6 +39,15 @@ def check_self(submission):
     # Return True if post is self.post
     return submission.is_self
 
+def check_approved(submission):
+    # Return True if post has been approved by moderator
+    # require moderator privileges
+    # value is True or null
+    if submission.approved is True:
+        return submission.approved
+    else:
+        return False
+
 def check_domain(domain):
     # Return True if link domain is in accepted domain list
     # Regex
@@ -83,11 +92,9 @@ def check_self_promotion(submission):
         return False
 
 def check_removed(submission):
-    # Need moderator privileges to check if a post is deleted or removed by admin/mod
-    if submission.banned_by is "null":
-        return False
-    else:
-        return True
+    # Returns True if submission has been removed
+    # Require moderator privileges
+    return submission.removed
 
 def get_url(submission):
     # Get url
@@ -104,11 +111,7 @@ def get_musicbrainz_result(artist, song):
     result = musicbrainzngs.search_recordings(artist=artist, recording=song)
     # If the artist and song matches a recording in database then return True
     #if not result['recording-list']:
-    count = result['recording-count']
-    if count < 1:
-        return False
-    else:
-        return True
+    return result
     
 def get_domain(submission):
     return submission.domain
@@ -193,6 +196,12 @@ def get_post_title(submission):
     #extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
     #if not extra is None:
     #    title = title[:extra.start()] + title[extra.end():]
+    
+def get_title_search_listing(context, query):
+    # Search for query in last year of submissions where context is url or title
+    # Returns listing object of submission ordered new -> old
+    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(q="{}:{}".format(context, query), sort='new', t='year', restrict_sr=1):
+        
 
 def report_musicbrainz(reddit, submission):
     # Musicbrainz query was unsuccessful
@@ -227,7 +236,7 @@ def rule_six_month(reddit, submission, sub):
     # Submission will be reported and message sent to mods
     log.info("Rule Violation (6-month Repost): Reporting {}, repost of {}".format(submission.shortlink, sub.shortlink))
     #submission.mod.remove()
-    submission.report("ProgMetalBot - Repost of {}".format(sub.id))
+    submission.report("ProgMetalBot - Repost of {}".format(sub.shortlink))
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).".format(submission.shortlink, sub.shortlink))
     # ***UNCOMMENT LATER***
     #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, sub.shortlink, settings.USER_TO_MESSAGE))
@@ -422,8 +431,12 @@ def check_submission(reddit, submission):
                     # Report submission for artist or song in post title not found in link title
                     log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
                     rule_bad_title_report(reddit, submission)
-    if get_musicbrainz_result(post_artist, post_song) is False:
+    mb_result = get_musicbrainz_result(post_artist, post_song)
+    count = mb_result['recording-count']
+    if count < 1:
         report_musicbrainz(reddit, submission)
+    else:
+        print(mb_result)
     log.info("Domain: {:14} Song submitted: {} - {}".format(link_domain, post_artist, post_song))
     # Submission will be cross-checked with list
     return True
@@ -441,6 +454,7 @@ def check_list(reddit, submission, stored_posts):
         post_title = post_title_split[0] + " -- " + post_title_split[1]
     log.info("Cross-checking Url: \"{}\" and Title: \"{}\" with older posts".format(post_url, post_title))
     # POSSIBILITY OF REVERSE TITLE LIKE *SONG - ARTIST*
+    # Method is probably neutered because failed get_post_title() will not match "artist -- song"
     for old_submission in stored_posts:
         # CHECK IF OLD SUBMISSION HAS BEEN REMOVED
         old_post_url = get_url(old_submission)
@@ -456,6 +470,35 @@ def check_list(reddit, submission, stored_posts):
                 old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
             if post_title in old_post_title or old_post_title in post_title:
+                log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
+                rule_six_month(reddit, submission, old_submission)
+                break
+    # Compare submission to search results
+    # Only happens if previous stored_posts check found no match
+    # May prioritize a reddit search before list check if it's efficient
+    log.info("Searching for Url: \"{}\" and Title: \"{}\" in subreddit".format(post_url, post_title))
+    query = post_url
+    context = 'url'
+    listing = get_reddit_search_listing(context, query)
+    for result in listing:
+        if not check_archived(result) and result.id is not submission.id:
+            result_url = get_url(result)
+            if result_url is post_url:
+                log.info("Url match of \"{}\" and \"{}\"".format(post_url, result_url))
+                rule_six_month(reddit, submission, result)
+                break
+    query = post_title.replace(" -- ", " ")
+    context = 'title'
+    listing = get_reddit_search_listing(context, query)
+    for result in listing:
+        if not check_archived(result) and result.id is not submission.id
+            result_title_split = get_post_title(old_submission)
+            if result_title_split[1] is None:
+                result_title = result_title_split[0]
+            else:
+                result_title = result_title_split[0] + " -- " + result_title_split[1]
+            # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
+            if post_title in result_title or result_title in post_title:
                 log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
                 rule_six_month(reddit, submission, old_submission)
                 break

@@ -197,10 +197,11 @@ def get_post_title(submission):
     #if not extra is None:
     #    title = title[:extra.start()] + title[extra.end():]
     
-def get_reddit_search_listing(reddit, context, sub_query):
+def get_reddit_search_listing(reddit, context, query_text):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
-    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search("{}:{}".format(context, sub_query), sort='new', time_filter='year')
+    query = context + ":" + query_text
+    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(query, sort='new', time_filter='year')
     return listing
 
 def report_musicbrainz(reddit, submission):

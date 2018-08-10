@@ -197,7 +197,7 @@ def get_post_title(submission):
     #if not extra is None:
     #    title = title[:extra.start()] + title[extra.end():]
     
-def get_title_search_listing(context, query):
+def get_reddit_search_listing(context, query):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
     listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(q="{}:{}".format(context, query), sort='new', t='year', restrict_sr=1)
@@ -435,8 +435,9 @@ def check_submission(reddit, submission):
     count = mb_result['recording-count']
     if count < 1:
         report_musicbrainz(reddit, submission)
-    else:
-        print(mb_result)
+    # can check for correct listing within musicbrainz result
+    #else:
+    #    print(mb_result)
     log.info("Domain: {:14} Song submitted: {} - {}".format(link_domain, post_artist, post_song))
     # Submission will be cross-checked with list
     return True

@@ -481,20 +481,21 @@ def check_list(reddit, submission, stored_posts):
     log.info("Searching for Url: \"{}\" and Title: \"{}\" in subreddit".format(post_url, post_title))
     query = post_url
     context = "url"
-    listing = get_reddit_search_listing(reddit, context, query)
-    for result in listing:
-        if not check_archived(result) and result.id is not submission.id:
-            result_url = get_url(result)
+    search_listing = get_reddit_search_listing(reddit, context, query)
+    for search_result in search_listing:
+        if not check_archived(search_result) and search_result.id is not submission.id:
+            result_url = get_url(search_result)
             if result_url is post_url:
                 log.info("Url match of \"{}\" and \"{}\"".format(post_url, result_url))
-                rule_six_month(reddit, submission, result)
+                rule_six_month(reddit, submission, search_result)
                 break
+    search_listing = None
     query = post_title.replace(" -- ", " ")
     context = "title"
-    listing = get_reddit_search_listing(reddit, context, query)
-    for result in listing:
-        if not check_archived(result) and result.id is not submission.id:
-            result_title_split = get_post_title(old_submission)
+    search_listing = get_reddit_search_listing(reddit, context, query)
+    for search_result in search_listing:
+        if not check_archived(search_result) and search_result.id is not submission.id:
+            result_title_split = get_post_title(search_result)
             if result_title_split[1] is None:
                 result_title = result_title_split[0]
             else:
@@ -503,7 +504,7 @@ def check_list(reddit, submission, stored_posts):
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
             if post_title.lower() in result_title.lower() or result_title.lower() in post_title.lower():
                 log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
-                rule_six_month(reddit, submission, result)
+                rule_six_month(reddit, submission, search_result)
                 break
 
 def purge_old_links(reddit, stored_posts):

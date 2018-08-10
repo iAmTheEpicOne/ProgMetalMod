@@ -500,7 +500,7 @@ def check_list(reddit, submission, stored_posts):
                 result_title = result_title_split[0]
             else:
                 result_title = result_title_split[0] + " " + result_title_split[1]
-            log.info("Comparing to {} with Title: {}".format(result.id, result_title))
+            log.info("Comparing to {} with Title: {}".format(search_result.id, result_title))
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
             if post_title.lower() in result_title.lower() or result_title.lower() in post_title.lower():
                 log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))

@@ -489,13 +489,12 @@ def check_list(reddit, submission, stored_posts):
                 log.info("Url match of \"{}\" and \"{}\"".format(post_url, result_url))
                 rule_six_month(reddit, submission, search_result)
                 break
-        search_result = None
     search_listing = None
     query = post_title.replace(" -- ", " ")
     context = "title"
     search_listing = get_reddit_search_listing(reddit, context, query)
     for search_result in search_listing:
-        if submission.id is not search_result.id:
+        if submission is not search_result:
             if not check_archived(search_result):
                 result_title_split = get_post_title(search_result)
                 if result_title_split[1] is None:
@@ -508,7 +507,6 @@ def check_list(reddit, submission, stored_posts):
                     log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
                     rule_six_month(reddit, submission, search_result)
                     break
-        search_result = None
 
 def purge_old_links(reddit, stored_posts):
     # Removes links archived and removed posts from queue

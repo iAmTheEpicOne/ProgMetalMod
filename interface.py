@@ -201,7 +201,7 @@ def get_reddit_search_listing(reddit, context, sub_query):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
     listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(query="{}:{}".format(context, sub_query), sort='new', time_filter='year',
-                                                                 params={"restrict_sr" : "1")
+                                                                 params={"restrict_sr" : "1"})
     return listing
 
 def report_musicbrainz(reddit, submission):

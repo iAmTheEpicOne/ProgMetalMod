@@ -489,6 +489,7 @@ def check_list(reddit, submission, stored_posts):
                 log.info("Url match of \"{}\" and \"{}\"".format(post_url, result_url))
                 rule_six_month(reddit, submission, search_result)
                 break
+        search_result = None
     search_listing = None
     query = post_title.replace(" -- ", " ")
     context = "title"
@@ -507,6 +508,7 @@ def check_list(reddit, submission, stored_posts):
                     log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
                     rule_six_month(reddit, submission, search_result)
                     break
+        search_result = None
 
 def purge_old_links(reddit, stored_posts):
     # Removes links archived and removed posts from queue

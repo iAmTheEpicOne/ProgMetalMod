@@ -494,18 +494,19 @@ def check_list(reddit, submission, stored_posts):
     context = "title"
     search_listing = get_reddit_search_listing(reddit, context, query)
     for search_result in search_listing:
-        if not check_archived(search_result) and search_result.id is not submission.id:
-            result_title_split = get_post_title(search_result)
-            if result_title_split[1] is None:
-                result_title = result_title_split[0]
-            else:
-                result_title = result_title_split[0] + " " + result_title_split[1]
-            log.info("Comparing to {} with Title: {}".format(search_result.id, result_title))
-            # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
-            if post_title.lower() in result_title.lower() or result_title.lower() in post_title.lower():
-                log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
-                rule_six_month(reddit, submission, search_result)
-                break
+        if submission.id is not search_result.id:
+            if not check_archived(search_result):
+                result_title_split = get_post_title(search_result)
+                if result_title_split[1] is None:
+                    result_title = result_title_split[0]
+                else:
+                    result_title = result_title_split[0] + " " + result_title_split[1]
+                log.info("Comparing to Post: {} with Title: \"{}\"".format(search_result.id, result_title))
+                # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
+                if post_title.lower() in result_title.lower() or result_title.lower() in post_title.lower():
+                    log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
+                    rule_six_month(reddit, submission, search_result)
+                    break
 
 def purge_old_links(reddit, stored_posts):
     # Removes links archived and removed posts from queue

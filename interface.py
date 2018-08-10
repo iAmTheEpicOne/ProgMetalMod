@@ -522,7 +522,7 @@ def purge_old_links(reddit, stored_posts):
     stored_posts = list(filter(None, stored_posts))
     return stored_posts
 
-def check_url(url):https://open.spotify.com/track/3PQ6g2f0R7xEfcL3TWN8XW
+def check_url(url):
     response = requests.get(url)
     m = hashlib.md5()
     #print response.text[0:1024]

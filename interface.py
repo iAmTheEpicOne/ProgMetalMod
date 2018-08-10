@@ -200,8 +200,7 @@ def get_post_title(submission):
 def get_reddit_search_listing(reddit, context, sub_query):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
-    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(query="{}:{}".format(context, sub_query), sort='new', time_filter='year',
-                                                                 params={"restrict_sr" : "1"})
+    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search("{}:{}".format(context, sub_query), sort='new', time_filter='year')
     return listing
 
 def report_musicbrainz(reddit, submission):
@@ -471,7 +470,7 @@ def check_list(reddit, submission, stored_posts):
             else:
                 old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
-            if post_title in old_post_title or old_post_title in post_title:
+            if post_title.lower() in old_post_title.lower() or old_post_title.lower() in post_title.lower():
                 log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
                 rule_six_month(reddit, submission, old_submission)
                 break
@@ -498,11 +497,12 @@ def check_list(reddit, submission, stored_posts):
             if result_title_split[1] is None:
                 result_title = result_title_split[0]
             else:
-                result_title = result_title_split[0] + " -- " + result_title_split[1]
+                result_title = result_title_split[0] + " " + result_title_split[1]
+            log.info("Comparing to {} with Title: {}".format(result.id, result_title))
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
-            if post_title in result_title or result_title in post_title:
-                log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
-                rule_six_month(reddit, submission, old_submission)
+            if post_title.lower() in result_title.lower() or result_title.lower() in post_title.lower():
+                log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
+                rule_six_month(reddit, submission, result)
                 break
 
 def purge_old_links(reddit, stored_posts):

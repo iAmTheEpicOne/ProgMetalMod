@@ -197,7 +197,7 @@ def get_post_title(submission):
     #if not extra is None:
     #    title = title[:extra.start()] + title[extra.end():]
     
-def get_reddit_search_listing(context, query):
+def get_reddit_search_listing(reddit, context, query):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
     listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(q="{}:{}".format(context, query), sort='new', t='year', restrict_sr=1)
@@ -480,7 +480,7 @@ def check_list(reddit, submission, stored_posts):
     log.info("Searching for Url: \"{}\" and Title: \"{}\" in subreddit".format(post_url, post_title))
     query = post_url
     context = 'url'
-    listing = get_reddit_search_listing(context, query)
+    listing = get_reddit_search_listing(reddit, context, query)
     for result in listing:
         if not check_archived(result) and result.id is not submission.id:
             result_url = get_url(result)
@@ -490,7 +490,7 @@ def check_list(reddit, submission, stored_posts):
                 break
     query = post_title.replace(" -- ", " ")
     context = 'title'
-    listing = get_reddit_search_listing(context, query)
+    listing = get_reddit_search_listing(reddit, context, query)
     for result in listing:
         if not check_archived(result) and result.id is not submission.id:
             result_title_split = get_post_title(old_submission)

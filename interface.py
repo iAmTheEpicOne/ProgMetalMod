@@ -200,8 +200,8 @@ def get_post_title(submission):
 def get_reddit_search_listing(reddit, context, query_text):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
-    query = context + ":" + query_text
-    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(query, sort='new', time_filter='year')
+    search_query = context + ":" + query_text
+    listing = reddit.subreddit(settings.REDDIT_SUBREDDIT).search(search_query, sort='new', time_filter='year', limit=10)
     return listing
 
 def report_musicbrainz(reddit, submission):
@@ -480,7 +480,7 @@ def check_list(reddit, submission, stored_posts):
     # May prioritize a reddit search before list check if it's efficient
     log.info("Searching for Url: \"{}\" and Title: \"{}\" in subreddit".format(post_url, post_title))
     query = post_url
-    context = 'url'
+    context = "url"
     listing = get_reddit_search_listing(reddit, context, query)
     for result in listing:
         if not check_archived(result) and result.id is not submission.id:
@@ -490,7 +490,7 @@ def check_list(reddit, submission, stored_posts):
                 rule_six_month(reddit, submission, result)
                 break
     query = post_title.replace(" -- ", " ")
-    context = 'title'
+    context = "title"
     listing = get_reddit_search_listing(reddit, context, query)
     for result in listing:
         if not check_archived(result) and result.id is not submission.id:

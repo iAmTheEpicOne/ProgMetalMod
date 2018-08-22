@@ -26,7 +26,7 @@ log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
 
 # MAIN PROCEDURE
 def run_bot():
-    
+
     # -- progmetalbot useragent and version --
     app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION'] + " by u/" + settings.USER_TO_MESSAGE
     # -- praw --
@@ -43,15 +43,15 @@ def run_bot():
                                  os.environ['APP_VERSION'],
                                  os.environ['CONTACT_EMAIL'])
     # -- youtube --
-    
+
     # -- spotify --
-    
+
     # -- last.fm --
-    
+
     # -- postgresql --
     #DATABASE_URL = os.environ['DATABASE_URL']
     #conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    # -- cloudcube AWS -- 
+    # -- cloudcube AWS --
     #s3 = boto3.resource('s3')
 
     #log.info("Python platform: {}".format(platform.python_version()))
@@ -77,19 +77,23 @@ def run_bot():
                         post_type = "self"
                     else:
                         post_type = "link"
-                    log.info("Found new {} submission: {} in subreddit: {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
+                    log.info("Found new {} Submission: {} in Subreddit: {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
                     #print(vars(submission))
+                    if not interface.check_embed(submission):
+                        # Link submission does not have embeded media information to use for submission checking
+                        log.info("Link Submission: {} has no embedded media, will skip".format(submission))
+                        continue
                     bool_post = interface.check_submission(reddit, submission)
                     if bool_post:
                         interface.check_list(reddit, submission, stored_posts)
                     stored_posts.append(submission)
                     log.info("Checks complete for submission: {}".format(submission))
-                
+
                 # Only checks submission for accurate title/link info
                 #if interface.check_post(submission):
                 #    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
                 #    interface.check_submission(reddit, submission)
-                    
+
             # Write stored posts to a file
             #interface.update_stored_posts(reddit, stored_posts)
 

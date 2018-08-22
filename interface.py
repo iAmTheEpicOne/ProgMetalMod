@@ -57,6 +57,13 @@ def check_domain(domain):
     else:
         return True
 
+def check_embed(submission):
+    # Return True if link submission has embedded info
+    if submission.media is "null":
+        return False
+    else:
+        return True
+
 def check_album_stream(submission):
     # Returns True if url contains "album"
     domain = get_domain(submission)

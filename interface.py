@@ -62,10 +62,9 @@ def check_album_stream(submission):
     domain = get_domain(submission)
     if domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
         try:
-            title = submission.media.oembed.title
-        except Exception as e:
-            log.error("Exception in check_album_stream: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
             title = submission.media['oembed']['title']
+        except:
+            title = submission.media.oembed.title
         result = re.search('(?i)(full.?album|album.?stream)', title)
         if result is None:
             result = re.search('(\.com\/playlist\?)', submission.url)
@@ -129,10 +128,9 @@ def get_link_title(reddit, submission):
     domain = get_domain(submission)
     if domain is "spotify.com":
         try:
-            description = submission.media.oembed.description
-        except Exception as e:
-            log.error("Exception in get_link_title: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
             description = submission.media['oembed']['description']
+        except:
+            description = submission.media.oembed.description
         # Regex
         title = re.search('(.*), a song by (.*) on Spotify', description)
         song = title.group(1)
@@ -140,10 +138,9 @@ def get_link_title(reddit, submission):
         link_title = [artist, song]
     elif domain is "bandcamp.com":
         try:
-            description = submission.media.oembed.title
-        except Exception as e:
-            log.error("Exception in get_link_title: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
             description = submission.media['oembed']['title']
+        except:
+            description = submission.media.oembed.title
         # Regex
         title = re.search('(.*), by (.*)', description)
         song = title.group(1)
@@ -153,12 +150,11 @@ def get_link_title(reddit, submission):
     # Need to add YouTube API for better info
     # Currently cannot access a video's description
         try:
-            link_author = submission.media.oembed.author_name
-            link_media_title = submission.media.oembed.title
-        except Exception as e:
-            log.error("Exception in get_link_title: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
             link_author = submission.media['oembed']['author_name']
             link_media_title = submission.media['oembed']['title']
+        except:
+            link_author = submission.media.oembed.author_name
+            link_media_title = submission.media.oembed.title
         if " - Topic" in link_author:
         # YouTube channel is auto-generated "Artist - Topic"
         # so video title is the song name
@@ -422,10 +418,9 @@ def check_submission(reddit, submission):
             if link_artist.lower() not in post_artist.lower() or link_song.lower() not in post_song.lower():
                 # a 3rd check for a final pass at a bad link title vs post title
                 try:
-                    link_title = submission.media.oembed.title
-                except Exception as e:
-                    log.error("Exception in check_submission: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
                     link_title = submission.media['oembed']['title']
+                except:
+                    link_title = submission.media.oembed.title
                 if post_artist.lower() not in link_title.lower() or post_song.lower() not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title
                     log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))

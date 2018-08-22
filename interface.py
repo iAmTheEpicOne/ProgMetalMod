@@ -59,7 +59,7 @@ def check_domain(domain):
 
 def check_embed(submission):
     # Return True if link submission has embedded info
-    if submission.media is "null":
+    if submission.media is None:
         return False
     else:
         return True

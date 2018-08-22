@@ -30,7 +30,7 @@ def get_submission_age(submission):
 def check_age_max(submission):
     # Return True if age is < MAX_REMEMBER_LIMIT
     return get_submission_age(submission).days < settings.MAX_REMEMBER_LIMIT
-    
+
 def check_age_days(submission):
     # Return True if age is < 2 days
     return get_submission_age(submission).days < 2
@@ -61,7 +61,11 @@ def check_album_stream(submission):
     # Returns True if url contains "album"
     domain = get_domain(submission)
     if domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
-        title = submission.media['oembed']['title']
+        try:
+            title = submission.media.oembed.title
+        except Exception as e:
+            log.error("Exception in check_album_stream: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
+            title = submission.media['oembed']['title']
         result = re.search('(?i)(full.?album|album.?stream)', title)
         if result is None:
             result = re.search('(\.com\/playlist\?)', submission.url)
@@ -112,7 +116,7 @@ def get_musicbrainz_result(artist, song):
     # If the artist and song matches a recording in database then return True
     #if not result['recording-list']:
     return result
-    
+
 def get_domain(submission):
     return submission.domain
 
@@ -124,14 +128,22 @@ def get_link_title(reddit, submission):
     #   link_title can then be used as crosscheck with reddit post title info
     domain = get_domain(submission)
     if domain is "spotify.com":
-        description = submission.media['oembed']['description']
+        try:
+            description = submission.media.oembed.description
+        except Exception as e:
+            log.error("Exception in get_link_title: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
+            description = submission.media['oembed']['description']
         # Regex
         title = re.search('(.*), a song by (.*) on Spotify', description)
         song = title.group(1)
         artist = title.group(2)
         link_title = [artist, song]
     elif domain is "bandcamp.com":
-        description = submission.media['oembed']['title']
+        try:
+            description = submission.media.oembed.title
+        except Exception as e:
+            log.error("Exception in get_link_title: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
+            description = submission.media['oembed']['title']
         # Regex
         title = re.search('(.*), by (.*)', description)
         song = title.group(1)
@@ -140,8 +152,13 @@ def get_link_title(reddit, submission):
     elif domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
     # Need to add YouTube API for better info
     # Currently cannot access a video's description
-        link_author = submission.media['oembed']['author_name']
-        link_media_title = submission.media['oembed']['title']
+        try:
+            link_author = submission.media.oembed.author_name
+            link_media_title = submission.media.oembed.title
+        except Exception as e:
+            log.error("Exception in get_link_title: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
+            link_author = submission.media['oembed']['author_name']
+            link_media_title = submission.media['oembed']['title']
         if " - Topic" in link_author:
         # YouTube channel is auto-generated "Artist - Topic"
         # so video title is the song name
@@ -186,17 +203,7 @@ def get_post_title(submission):
         song = title.group(2)
         post_title = [artist, song]
     return post_title
-    #title = re.search('^.+?\s(?:-{1,2}|\u2014|\u2013)\s.*$', submission.title)
-    #if title is None:
-    #    if reports is 1:
-    #        rule_bad_title(reddit, submission)
-    #    title = submission.title
-    #else:
-    #    title = title.group(0)
-    #extra = re.search('\s[()[\]{}|].*[()[\]{}|].*$', title)
-    #if not extra is None:
-    #    title = title[:extra.start()] + title[extra.end():]
-    
+
 def get_reddit_search_listing(reddit, context, query_text):
     # Search for query in last year of submissions where context is url or title
     # Returns listing object of submission ordered new -> old
@@ -265,7 +272,7 @@ def rule_violation(rules_violated, rule):
     # Appends a rule to rules_violated for specific submission
     rules_violated += [rule]
     return rules_violated
-    
+
 def perform_mod_actions(reddit, rules_violated):
     # For each rule in rules_violated, perform mod actions
     if len(rules_violated) > 1:
@@ -324,19 +331,6 @@ def initialize_link_array(reddit):
                 stored_count += 1
             if submission.created_utc < earliest_time:
                 break
-    
-    # was going to try this, but .submissions() is deprecated....
-    #current_time = int(time.time())
-    #earliest_time = int((datetime.datetime.now() - datetime.timedelta(days=181)).timestamp())
-    #post_timestamp = current_time
-    #while post_timestamp > earliest_time:
-    #    for submission in reddit.subreddit(subreddit).submissions(start=post_timestamp, end=earliest_time, extra_query=None):
-    #        post_timestamp = submission.created_utc
-    #        if check_post(submission) and not check_age_days(submission):
-    #            if submission.id not in [sub.id for sub in stored_posts]:
-    #                stored_posts.append(submission)
-    #                stored_count += 1
-    
     # reverse so oldest are first
     stored_posts.reverse()
     stored_posts = list(filter(None, stored_posts))
@@ -427,7 +421,11 @@ def check_submission(reddit, submission):
             # reverse check to be double sure in case of extra text in titles
             if link_artist.lower() not in post_artist.lower() or link_song.lower() not in post_song.lower():
                 # a 3rd check for a final pass at a bad link title vs post title
-                link_title = submission.media['oembed']['title']
+                try:
+                    link_title = submission.media.oembed.title
+                except Exception as e:
+                    log.error("Exception in check_submission: {}\nWill subscript json object instead of dict".format(e), exc_info=True)
+                    link_title = submission.media['oembed']['title']
                 if post_artist.lower() not in link_title.lower() or post_song.lower() not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title
                     log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
@@ -506,7 +504,7 @@ def check_list(reddit, submission, stored_posts):
                 log.info("Comparing to Post: {} with Title: \"{}\"".format(search_result.id, result_title))
                 # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
                 if query.lower() in result_title.lower() or result_title.lower() in query.lower():
-                    log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
+                    log.info("Title match of \"{}\" and \"{}\"".format(query, result_title))
                     rule_six_month(reddit, submission, search_result)
                     break
 
@@ -515,7 +513,7 @@ def purge_old_links(reddit, stored_posts):
     for submission in stored_posts:
         # check_removed is unused at the moment until mod privileges
         #if check_archived(submission) or check_removed(submission):
-        if check_archived(submission): 
+        if check_archived(submission):
             stored_posts.remove(sub)
         else:
             break
@@ -538,4 +536,3 @@ def log_info(submission):
     else:
         title_str = title[0] + " -- " + title[1]
     log.info("Link: {}  Domain: {:14}  Title: {}".format(submission, domain, title_str))
-    

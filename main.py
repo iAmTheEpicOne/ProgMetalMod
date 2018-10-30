@@ -88,7 +88,7 @@ def run_bot():
                     if bool_post:
                         #interface.check_list(reddit, submission, stored_posts)
                         interface.check_list(reddit, submission)
-                    stored_posts.append(submission)
+                    #stored_posts.append(submission)
                     log.info("Checks complete for submission: {}".format(submission))
 
                 # Only checks submission for accurate title/link info

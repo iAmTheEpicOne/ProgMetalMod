@@ -72,7 +72,7 @@ def run_bot():
                 #    log.info("Purging old posts from list")
                 #    stored_posts = interface.purge_old_links(reddit, stored_posts)
                 #if interface.check_post(submission) and submission.id not in [sub.id for sub in stored_posts]:
-                if interface.check_post(submission):
+                if interface.check_post(submission) and interface.check_age_days(submission):
                     #log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
                     if submission.is_self:
                         post_type = "self"

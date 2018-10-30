@@ -57,8 +57,8 @@ def run_bot():
     #log.info("Python platform: {}".format(platform.python_version()))
     log.info("Starting bot \"{}\" for subreddit {}".format(app_useragent_version, settings.REDDIT_SUBREDDIT))
     interface.unhide_posts(reddit)
-    log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
-    stored_posts = interface.initialize_link_array(reddit)
+    #log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
+    #stored_posts = interface.initialize_link_array(reddit)
     while True:
         try:
             log.info("Reading stream of submissions for subreddit %s", settings.REDDIT_SUBREDDIT)
@@ -67,11 +67,12 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
-                old_submission_id = stored_posts[0]
-                if not interface.check_age_max(reddit.submission(id=old_submission_id)):
-                    log.info("Purging old posts from list")
-                    stored_posts = interface.purge_old_links(reddit, stored_posts)
-                if interface.check_post(submission) and submission.id not in [sub.id for sub in stored_posts]:
+                #old_submission_id = stored_posts[0]
+                #if not interface.check_age_max(reddit.submission(id=old_submission_id)):
+                #    log.info("Purging old posts from list")
+                #    stored_posts = interface.purge_old_links(reddit, stored_posts)
+                #if interface.check_post(submission) and submission.id not in [sub.id for sub in stored_posts]:
+                if interface.check_post(submission):
                     #log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
                     if submission.is_self:
                         post_type = "self"
@@ -85,7 +86,8 @@ def run_bot():
                         continue
                     bool_post = interface.check_submission(reddit, submission)
                     if bool_post:
-                        interface.check_list(reddit, submission, stored_posts)
+                        #interface.check_list(reddit, submission, stored_posts)
+                        interface.check_list(reddit, submission)
                     stored_posts.append(submission)
                     log.info("Checks complete for submission: {}".format(submission))
 

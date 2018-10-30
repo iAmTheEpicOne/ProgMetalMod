@@ -33,7 +33,7 @@ def check_age_max(submission):
 
 def check_age_days(submission):
     # Return True if age is < 2 days
-    return get_submission_age(submission).days < 2
+    return get_submission_age(submission).days < 1
 
 def check_self(submission):
     # Return True if post is self.post
@@ -432,10 +432,10 @@ def check_submission(reddit, submission):
                     # Report submission for artist or song in post title not found in link title
                     log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
                     rule_bad_title_report(reddit, submission)
-    mb_result = get_musicbrainz_result(post_artist, post_song)
-    count = mb_result['recording-count']
-    if count < 1:
-        report_musicbrainz(reddit, submission)
+    #mb_result = get_musicbrainz_result(post_artist, post_song)
+    #count = mb_result['recording-count']
+    #if count < 1:
+    #    report_musicbrainz(reddit, submission)
     # can check for correct listing within musicbrainz result
     #else:
     #    print(mb_result)
@@ -443,7 +443,8 @@ def check_submission(reddit, submission):
     # Submission will be cross-checked with list
     return True
 
-def check_list(reddit, submission, stored_posts):
+def check_list(reddit, submission):
+#def check_list(reddit, submission, stored_posts):
     # Cross-check submission against list for matching url or title info
     # If matched, report post
     # If not, add it to the list
@@ -454,27 +455,27 @@ def check_list(reddit, submission, stored_posts):
         post_title = post_title_split[0]
     else:
         post_title = post_title_split[0] + " -- " + post_title_split[1]
-    log.info("Cross-checking Url: \"{}\" and Title: \"{}\" with older posts".format(post_url, post_title))
+    #log.info("Cross-checking Url: \"{}\" and Title: \"{}\" with older posts".format(post_url, post_title))
     # POSSIBILITY OF REVERSE TITLE LIKE *SONG - ARTIST*
     # Method is probably neutered because failed get_post_title() will not match "artist -- song"
-    for old_submission in stored_posts:
+    #for old_submission in stored_posts:
         # CHECK IF OLD SUBMISSION HAS BEEN REMOVED
-        old_post_url = get_url(old_submission)
-        if post_url in old_post_url:
-            log.info("Url match of \"{}\" and \"{}\"".format(post_url, old_post_url))
-            rule_six_month(reddit, submission, old_submission)
-            break
-        else:
-            old_post_title_split = get_post_title(old_submission)
-            if old_post_title_split[1] is None:
-                old_post_title = old_post_title_split[0]
-            else:
-                old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
+    #    old_post_url = get_url(old_submission)
+    #    if post_url in old_post_url:
+    #        log.info("Url match of \"{}\" and \"{}\"".format(post_url, old_post_url))
+    #        rule_six_month(reddit, submission, old_submission)
+    #        break
+    #    else:
+    #        old_post_title_split = get_post_title(old_submission)
+    #        if old_post_title_split[1] is None:
+    #            old_post_title = old_post_title_split[0]
+    #        else:
+    #            old_post_title = old_post_title_split[0] + " -- " + old_post_title_split[1]
             # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
-            if post_title.lower() in old_post_title.lower() or old_post_title.lower() in post_title.lower():
-                log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
-                rule_six_month(reddit, submission, old_submission)
-                break
+    #        if post_title.lower() in old_post_title.lower() or old_post_title.lower() in post_title.lower():
+    #            log.info("Title match of \"{}\" and \"{}\"".format(post_title, old_post_title))
+    #            rule_six_month(reddit, submission, old_submission)
+    #            break
     # Compare submission to search results
     # Only happens if previous stored_posts check found no match
     # May prioritize a reddit search before list check if it's efficient

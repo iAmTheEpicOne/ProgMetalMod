@@ -486,6 +486,7 @@ def check_list(reddit, submission):
     # Only happens if previous stored_posts check found no match
     # May prioritize a reddit search before list check if it's efficient
     log.info("Searching for Url: \"{}\" and Title: \"{}\" in subreddit".format(post_url, post_title))
+    post_title_lower = post_title.replace(" -- ", " ").lower()
     try:
         query = post_url
         context = "url"
@@ -510,11 +511,12 @@ def check_list(reddit, submission):
                     if result_title_split[1] is None:
                         result_title = result_title_split[0]
                     else:
-                        result_title = result_title_split[0] + " " + result_title_split[1]
+                        result_title = result_title_split[0] + " -- " + result_title_split[1]
                     log.info("Comparing to Post: {} with Title: \"{}\"".format(search_result.id, result_title))
+                    result_title_lower = result_title.replace(" -- ", " ").lower()
                     # check both ways incase one title has extra (descriptors) that weren't caught in get_post_title()
-                    if query.lower() in result_title.lower() or result_title.lower() in query.lower():
-                        log.info("Title match of \"{}\" and \"{}\"".format(query, result_title))
+                    if post_title_lower in result_title_lower or result_title_lower in post_title_lower:
+                        log.info("Title match of \"{}\" and \"{}\"".format(post_title, result_title))
                         rule_six_month(reddit, submission, search_result)
                         break
     except prawcore.exceptions.ServerError as e:

@@ -1,4 +1,5 @@
 import praw
+import prawcore
 import time
 import hashlib
 import datetime
@@ -512,7 +513,7 @@ def check_list(reddit, submission):
                         log.info("Title match of \"{}\" and \"{}\"".format(query, result_title))
                         rule_six_month(reddit, submission, search_result)
                         break
-    except praw.exceptions.APIException as e:
+    except prawcore.exceptions.ServerError as e:
         # HTTP Exception, will skip current search
         #e._raw.status_code will show 503, etc.
         log.error("Exception in reddit search: %s", e, exc_info=True)

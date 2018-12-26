@@ -456,8 +456,10 @@ def check_list(reddit, submission):
     post_title_split = get_post_title(submission)
     if post_title_split[1] is None:
         post_title = post_title_split[0]
+        title_query = "'" + post_title_split[0] + "'"
     else:
         post_title = post_title_split[0] + " -- " + post_title_split[1]
+        title_query = "'" + post_title_split[0] + "' '" + post_title_split[1] + "'"
     #log.info("Cross-checking Url: \"{}\" and Title: \"{}\" with older posts".format(post_url, post_title))
     # POSSIBILITY OF REVERSE TITLE LIKE *SONG - ARTIST*
     # Method is probably neutered because failed get_post_title() will not match "artist -- song"
@@ -495,10 +497,9 @@ def check_list(reddit, submission):
                     rule_six_month(reddit, submission, search_result)
                     break
         search_listing = None
-        query = post_title.replace(" -- ", " ")
         # try search by removing possible "(extra info)" info from the title with regex
         context = "title"
-        search_listing = get_reddit_search_listing(reddit, context, query)
+        search_listing = get_reddit_search_listing(reddit, context, title_query)
         for search_result in search_listing:
             # extraneous request to fix lazy object
             result_url = get_url(search_result)

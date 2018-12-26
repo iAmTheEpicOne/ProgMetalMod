@@ -181,7 +181,8 @@ def get_link_title(reddit, submission):
         # If video is normal upload by label or user
         else:
             # Regex
-            title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:full|video|instrumental|review|album|official|premiere?|lyric|playthrough|single).*|$|\n)', link_media_title)
+            #title = re.search('(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:full|video|instrumental|review|album|official|premiere?|lyric|playthrough|single|cover|[0-9]{4}).*|$|\n)', link_media_title)
+            title = re.search('(?iu)^(.*\S-\S.*|.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|\s(?:\(|\[|{).*[^)]$|[-(["].*?(?:full|video|instrumental|review|album|official|premiere?|lyric|playthrough|single|cover|version|live|music|[0-9]{4}).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title, None]
             else:
@@ -495,6 +496,7 @@ def check_list(reddit, submission):
                     break
         search_listing = None
         query = post_title.replace(" -- ", " ")
+        # try search by removing possible "(extra info)" info from the title with regex
         context = "title"
         search_listing = get_reddit_search_listing(reddit, context, query)
         for search_result in search_listing:

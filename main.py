@@ -67,6 +67,17 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
+
+                # One time wiki/config/automoderator page edit
+                timeCompare = time.localtime(1549465200)
+                timeNow = time.localtime()
+                if (timeNow >= timeCompare):
+                    wiki = subreddit.wiki['Config/automoderator']
+                    if (wiki.revision_by == 'iAmTheEpicOne'):
+                        page = wiki.revision('02e7e16a-16b4-11e9-95a3-0e73a987a412')
+                        log.info("Reverting automoderator config wiki to previous version")
+                        wiki.edit(page.content_md)
+
                 #old_submission_id = stored_posts[0]
                 #if not interface.check_age_max(reddit.submission(id=old_submission_id)):
                 #    log.info("Purging old posts from list")

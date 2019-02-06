@@ -4,6 +4,8 @@ import time
 import hashlib
 import datetime
 import requests
+from requests.utils import quote
+import base64
 import settings
 import logging.handlers
 import logging
@@ -14,6 +16,42 @@ import musicbrainzngs
 
 log = logging.getLogger("bot")
 #log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
+
+
+def getSpotifyAccessToken():
+    clientID = os.environ['SPOTIFY_ID']
+    clientSecret = os.environ['SPOTIFY_KEY']
+    authorization = "Basic " + base64.b64encode(clientID+':'+clientSecret)
+
+    payload = {'grant_type' : 'client_credentials'}
+    headers = {'Authorization' : authorization}
+
+    r = requests.post('https://accounts.spotify.com/api/token', data=payload, headers=headers);
+    rJson = r.json()
+    accessToken = rJson["access_token"]
+
+    return accessToken
+
+def getSpotifyTrack(artist, trackId, accessToken):
+    authorization = "Bearer " + accessToken
+
+def getSpotifyAlbum(artist, album, accessToken):
+    authorization = "Bearer " + accessToken
+
+    url = quote('https://api.spotify.com/v1/search?q=album:' + album + 'artist:' + artist + '&type=album')
+    headers = {'Accept' : 'application/json',
+               'Content-Type' : 'application/json',
+               'Authorization' : authorization}
+
+    r = requests.get(url, headers=headers)
+    rJson = r.json()
+
+    albumNum = rJson["albums"]["total"]
+    albums = rJson["albums"]["items"]
+    artist = albums[0]
+
+def getSpotifyArtist():
+    authorization = "Bearer " + accessToken
 
 def check_post(submission):
     # Return True if not archived and not self.post
@@ -222,58 +260,58 @@ def report_musicbrainz(reddit, submission):
     # Musicbrainz query was unsuccessful
     # Submission will be reported and message sent to mods
     log.info("Song not found in Musicbrainz: Reporting {}".format(submission.shortlink))
-    submission.report("ProgMetalBot: Not Found in Musicbrainz")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot", "Please look at [this post]({}) for failed Musicbrainz result or check the modmail.".format(submission.shortlink))
+    submission.report("Not Found in Musicbrainz")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Not Found in Musicbrainz", "Please look at [this post]({}) for failed Musicbrainz result or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot - Bad Title Format", "Please look at [this post]({}) for failed Musicbrainz result.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Not Found in Musicbrainz", "Please look at [this post]({}) for failed Musicbrainz result.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_bad_title(reddit, submission):
     # Submission was found to have an incorrect title
     # Submission will be reported and message sent to mods
     log.info("Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
     #submission.mod.remove()
-    submission.report("ProgMetalBot: Bad Title Format")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot: Bad Title Format", "Please look at [this post]({}) to check for proper title format.".format(submission.shortlink))
+    submission.report("Bad Title Format")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Bad Title Format", "Please look at [this post]({}) to check for proper title format.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot: Bad Title Format", "Please look at [this post]({}) and check for a proper title format.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Bad Title Format", "Please look at [this post]({}) and check for a proper title format.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_bad_title_report(reddit, submission):
     # Submission was found to possibly have an incorrect title
     # Submission will be reported to mods for verification
     log.info("Possible Rule Violation (Bad Title): Reporting {}".format(submission.shortlink))
-    submission.report("ProgMetalBot: Possible Bad Title/Link Match")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot: Bad Title/Link Match", "Please look at [this post]({}) to check for proper match of submission title and linked song.".format(submission.shortlink))
+    submission.report("Possible Bad Title/Link Match")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Bad Title/Link Match", "Please look at [this post]({}) to check for proper match of submission title and linked song.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot: Bad Title/Link Match", "Please look at [this post]({}) to check for a proper match of submission title and linked song.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Bad Title/Link Match", "Please look at [this post]({}) to check for a proper match of submission title and linked song.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_six_month(reddit, submission, sub):
     # Submission was found to violate the 'repost in six months' rule
     # Submission will be reported and message sent to mods
     log.info("Rule Violation (6-month Repost): Reporting {}, repost of {}".format(submission.shortlink, sub.shortlink))
     #submission.mod.remove()
-    submission.report("ProgMetalBot - Repost of {}".format(sub.shortlink))
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).".format(submission.shortlink, sub.shortlink))
+    submission.report("Repost of {}".format(sub.shortlink))
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).".format(submission.shortlink, sub.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, sub.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, sub.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_album_stream(reddit, submission):
     # Submission was found to link to a full album stream on bandcamp, spotify, or youtube
     # Submission will be reported and message sent to mods
     log.info("Rule Violation (Album Stream): Reporting {}".format(submission.shortlink))
     #submission.mod.remove()
-    submission.report("ProgMetalBot: Full Album Stream")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.".format(submission.shortlink))
+    submission.report("Full Album Stream")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_self_promotion(reddit, submission):
     # Submission was found to possibly be self-promotion
     # Submission will be reported and message sent to mods
     log.info("Rule Violation (Self-Promotion): Reporting {}".format(submission.shortlink))
-    submission.report("ProgMetalBot: Possible Self-Promotion")
-    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalBot: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.".format(submission.shortlink))
+    submission.report("Possible Self-Promotion")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalBot: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.\n\nThank you, and if you have a question please message u/{}\n\nWith Humble gratitude, ProgMetalBot".format(subission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.\n\nThank you, and if you have a question please message u/{}\n\nWith Humble gratitude, ProgMetalBot".format(subission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_violation(rules_violated, rule):
     # Appends a rule to rules_violated for specific submission

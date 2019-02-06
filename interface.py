@@ -17,42 +17,6 @@ import musicbrainzngs
 log = logging.getLogger("bot")
 #log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
 
-
-def getSpotifyAccessToken():
-    clientID = os.environ['SPOTIFY_ID']
-    clientSecret = os.environ['SPOTIFY_KEY']
-    authorization = "Basic " + base64.b64encode(clientID+':'+clientSecret)
-
-    payload = {'grant_type' : 'client_credentials'}
-    headers = {'Authorization' : authorization}
-
-    r = requests.post('https://accounts.spotify.com/api/token', data=payload, headers=headers);
-    rJson = r.json()
-    accessToken = rJson["access_token"]
-
-    return accessToken
-
-def getSpotifyTrack(artist, trackId, accessToken):
-    authorization = "Bearer " + accessToken
-
-def getSpotifyAlbum(artist, album, accessToken):
-    authorization = "Bearer " + accessToken
-
-    url = quote('https://api.spotify.com/v1/search?q=album:' + album + 'artist:' + artist + '&type=album')
-    headers = {'Accept' : 'application/json',
-               'Content-Type' : 'application/json',
-               'Authorization' : authorization}
-
-    r = requests.get(url, headers=headers)
-    rJson = r.json()
-
-    albumNum = rJson["albums"]["total"]
-    albums = rJson["albums"]["items"]
-    artist = albums[0]
-
-def getSpotifyArtist():
-    authorization = "Bearer " + accessToken
-
 def check_post(submission):
     # Return True if not archived and not self.post
     return not check_archived(submission) and not check_self(submission)
@@ -76,7 +40,7 @@ def check_age_days(submission):
     return get_submission_age(submission).days < 1
 
 def check_self(submission):
-    # Return True if post is self.post
+    # Return True if post is selfpost
     return submission.is_self
 
 def check_approved(submission):
@@ -87,6 +51,22 @@ def check_approved(submission):
         return submission.approved
     else:
         return False
+
+def check_reported(submission):
+    if submission.mod_reports_dismissed:
+        for item in submission.mod_reports_dismissed:
+            if item[1] is os.environ['REDDIT_USERNAME']:
+                return True
+        return False
+    elif submission.mod_reports[0]:
+        for item in submission.mod_reports:
+            if item[1] is os.environ['REDDIT_USERNAME']:
+                return True
+        return False
+    else:
+        return False
+
+
 
 def check_domain(domain):
     # Return True if link domain is in accepted domain list
@@ -104,6 +84,15 @@ def check_embed(submission):
     else:
         return True
 
+def check_lazy_text_post(submission):
+    # Return True if selftext contains just a link
+    result = re.search('(?iu)^https?:\/\/\S+?$',submission.selftext)
+    if result is None:
+        return False
+    else:
+        return True
+
+
 def check_album_stream(submission):
     # Returns True if url contains "album"
     domain = get_domain(submission)
@@ -112,7 +101,7 @@ def check_album_stream(submission):
             title = submission.media['oembed']['title']
         except:
             title = submission.media.oembed.title
-        result = re.search('(?i)(full.?album|album.?stream)', title)
+        result = re.search('(?i)(full.?album|album.?stream|full.?ep|ep.?stream)', title)
         if result is None:
             result = re.search('(\.com\/playlist\?)', submission.url)
             if result is None:
@@ -165,6 +154,73 @@ def get_musicbrainz_result(artist, song):
 
 def get_domain(submission):
     return submission.domain
+
+def get_spotify_authorization():
+    print("getting spotify authorization")
+    clientID = '65187cdd06e943448e28385cc8cccb17'
+    clientSecret = '10177d7bc7944636ad4083d51e00facc'
+    authorization = "Basic " + base64.b64encode(bytes(clientID+':'+clientSecret, 'utf-8')).decode()
+
+    payload = {'grant_type' : 'client_credentials'}
+    headers = {'Authorization' : authorization}
+
+    r = requests.post('https://accounts.spotify.com/api/token', data=payload, headers=headers);
+    rJson = r.json()
+    print(rJson)
+    accessToken = rJson["access_token"]
+    accessTokenAuthorization = "Bearer " + accessToken
+
+    return accessTokenAuthorization
+
+def get_spotify_track_from_link(trackLink):
+    authorization = get_spotify_authorization()
+
+    trackId = re.search('(?i)https?:\/\/open.spotify.com/track/([a-z0-9]{22})', trackLink).group(1)
+
+    url = 'https://api.spotify.com/v1/tracks/' + trackId
+    headers = {'Accept' : 'application/json',
+               'Content-Type' : 'application/json',
+               'Authorization' : authorization}
+
+    r = requests.get(url, headers=headers)
+    rJson = r.json()
+    #print(rJson)
+
+def get_spotify_album_from_link(albumLink):
+    authorization = get_spotify_authorization()
+
+    albumID = re.search('(?i)https?:\/\/open.spotify.com/album/([a-z0-9]{22})', albumLink).group(1)
+
+    url = 'https://api.spotify.com/v1/albums/' + albumID
+    headers = {'Accept' : 'application/json',
+               'Content-Type' : 'application/json',
+               'Authorization' : authorization}
+
+    r = requests.get(url, headers=headers)
+    rJson = r.json()
+    #print(rJson)
+
+    return rJson
+
+def get_spotify_album(artist, album):
+    authorization = get_spotify_authorization()
+
+    url = 'https://api.spotify.com/v1/search?q=album:"' + quote(album) + '"+artist:"' + quote(artist) + '"&type=album'
+    headers = {'Accept' : 'application/json',
+               'Content-Type' : 'application/json',
+               'Authorization' : authorization}
+
+    r = requests.get(url, headers=headers)
+    rJson = r.json()
+    print(rJson)
+
+    #albumNum = rJson["albums"]["total"]
+    #albums = rJson["albums"]["items"]
+    #artist = albums[0]
+
+def get_spotify_artist_from_id(artistId):
+    authorization = get_spotify_authorization()
+    url = 'https://api.spotify.com/v1/artists/' + artistId
 
 def get_link_title(reddit, submission):
     # Get 'Artist' and 'Song' from the embedded link info
@@ -263,7 +319,7 @@ def report_musicbrainz(reddit, submission):
     submission.report("Not Found in Musicbrainz")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Not Found in Musicbrainz", "Please look at [this post]({}) for failed Musicbrainz result or check the modmail.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Not Found in Musicbrainz", "Please look at [this post]({}) for failed Musicbrainz result.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Not Found in Musicbrainz", "Please look at [this post]({}) for failed Musicbrainz result.\n\nIf you have a question please message u/{}".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_bad_title(reddit, submission):
     # Submission was found to have an incorrect title
@@ -273,7 +329,7 @@ def rule_bad_title(reddit, submission):
     submission.report("Bad Title Format")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Bad Title Format", "Please look at [this post]({}) to check for proper title format.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Bad Title Format", "Please look at [this post]({}) and check for a proper title format.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Bad Title Format", "Please look at [this post]({}) and check for a proper title format.\n\nIf you have a question please message u/{}".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_bad_title_report(reddit, submission):
     # Submission was found to possibly have an incorrect title
@@ -282,7 +338,7 @@ def rule_bad_title_report(reddit, submission):
     submission.report("Possible Bad Title/Link Match")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Bad Title/Link Match", "Please look at [this post]({}) to check for proper match of submission title and linked song.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Bad Title/Link Match", "Please look at [this post]({}) to check for a proper match of submission title and linked song.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Bad Title/Link Match", "Please look at [this post]({}) to check for a proper match of submission title and linked song.\n\nIf you have a question please message u/{}".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_six_month(reddit, submission, sub):
     # Submission was found to violate the 'repost in six months' rule
@@ -292,7 +348,7 @@ def rule_six_month(reddit, submission, sub):
     submission.report("Repost of {}".format(sub.shortlink))
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).".format(submission.shortlink, sub.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, sub.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Song Repost", "Please look at [this post]({}) for a possible repost of [this post]({}).\n\nIf you have a question please message u/{}".format(submission.shortlink, sub.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_album_stream(reddit, submission):
     # Submission was found to link to a full album stream on bandcamp, spotify, or youtube
@@ -302,7 +358,7 @@ def rule_album_stream(reddit, submission):
     submission.report("Full Album Stream")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.\n\nThank you, and if you have a question please message u/{}\n\nWith humble gratitude, ProgMetalBot".format(submission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Full Album Stream", "Please look at [this post]({}) which may violate the full album stream rule.\n\nIf you have a question please message u/{}".format(submission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_self_promotion(reddit, submission):
     # Submission was found to possibly be self-promotion
@@ -311,7 +367,16 @@ def rule_self_promotion(reddit, submission):
     submission.report("Possible Self-Promotion")
     reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.".format(submission.shortlink))
     # ***UNCOMMENT LATER***
-    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.\n\nThank you, and if you have a question please message u/{}\n\nWith Humble gratitude, ProgMetalBot".format(subission.shortlink, settings.USER_TO_MESSAGE))
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Possible Self-Promotion", "Please look at [this post]({}) for possible self-promotion because the user's name matches the artist's name.\n\nIf you have a question please message u/{}".format(subission.shortlink, settings.USER_TO_MESSAGE))
+
+def rule_lazy_selfpost(reddit, submission):
+    # submission was found to be a self post with only a link
+    # Submission will be reported and message sent to mods
+    log.info("Rule Violation (Low-effort Selfpost): Reporting {}".format(submission.shortlink))
+    submission.report("Link as Selfpost")
+    reddit.redditor(settings.USER_TO_MESSAGE).message("ProgMetalMod: Link as Selfpost", "Please look at [this post]({}) for a lazy selfpost containing just a link.".format(submission.shortlink))
+    # ***UNCOMMENT LATER***
+    #reddit.subreddit(settings.REDDIT_SUBREDDIT).message("ProgMetalMod: Link as Selfpost", "Please look at [this post]({}) for a lazy selfpost containing just a link.\n\nIf you have a question please message u/{}".format(subission.shortlink, settings.USER_TO_MESSAGE))
 
 def rule_violation(rules_violated, rule):
     # Appends a rule to rules_violated for specific submission
@@ -404,7 +469,8 @@ def update_stored_posts(reddit, stored_posts):
 
 def check_selfpost(reddit, submission):
     # Check a self.subreddit submission
-    pass
+    if check_lazy_text_post(submission):
+        rule_lazy_selfpost(reddit, submission)
 
 def check_submission(reddit, submission):
     # Check the submission and link information for album stream, self-promotion, and bad title formatting

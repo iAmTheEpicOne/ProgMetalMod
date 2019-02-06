@@ -67,40 +67,24 @@ def run_bot():
                 #   If submission is not from music domain, does not get checked
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
-
-                # One time wiki/config/automoderator page edit
-                timeCompare = time.localtime(1549465200)
-                timeNow = time.localtime()
-                if (timeNow >= timeCompare):
-                    wiki = subreddit.wiki['Config/automoderator']
-                    if (wiki.revision_by == 'iAmTheEpicOne'):
-                        page = wiki.revision('02e7e16a-16b4-11e9-95a3-0e73a987a412')
-                        log.info("Reverting automoderator config wiki to previous version")
-                        wiki.edit(page.content_md)
-
-                #old_submission_id = stored_posts[0]
-                #if not interface.check_age_max(reddit.submission(id=old_submission_id)):
-                #    log.info("Purging old posts from list")
-                #    stored_posts = interface.purge_old_links(reddit, stored_posts)
-                #if interface.check_post(submission) and submission.id not in [sub.id for sub in stored_posts]:
-                if interface.check_post(submission) and interface.check_age_days(submission):
+                if not interface.check_archived(submission) and interface.check_age_days(submission) and not interface.check_reported(submission):
                     #log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
-                    if submission.is_self:
-                        post_type = "self"
+                    if interface.check_self(submission):
+                        log.info("Found new self Submission: {} in Subreddit: {}".format(submission, settings.REDDIT_SUBREDDIT))
+                        interface.check_selfpost(reddit, submission)
                     else:
-                        post_type = "link"
-                    log.info("Found new {} Submission: {} in Subreddit: {}".format(post_type, submission, settings.REDDIT_SUBREDDIT))
-                    #print(vars(submission))
-                    if not interface.check_embed(submission):
-                        # Link submission does not have embeded media information to use for submission checking
-                        log.info("Link Submission: {} has no embedded media, will skip".format(submission))
-                        continue
-                    bool_post = interface.check_submission(reddit, submission)
-                    if bool_post:
-                        #interface.check_list(reddit, submission, stored_posts)
-                        interface.check_list(reddit, submission)
-                    #stored_posts.append(submission)
-                    log.info("Checks complete for submission: {}".format(submission))
+                        log.info("Found new link Submission: {} in Subreddit: {}".format(submission, settings.REDDIT_SUBREDDIT))
+                        #print(vars(submission))
+                        if not interface.check_embed(submission):
+                            # Link submission does not have embeded media information to use for submission checking
+                            log.info("Link Submission: {} has no embedded media, will skip".format(submission))
+                            continue
+                        bool_post = interface.check_submission(reddit, submission)
+                        if bool_post:
+                            #interface.check_list(reddit, submission, stored_posts)
+                            interface.check_list(reddit, submission)
+                        #stored_posts.append(submission)
+                        log.info("Checks complete for submission: {}".format(submission))
 
                 # Only checks submission for accurate title/link info
                 #if interface.check_post(submission):

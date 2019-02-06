@@ -53,20 +53,15 @@ def check_approved(submission):
         return False
 
 def check_reported(submission):
-    if submission.mod_reports_dismissed:
+    if hasattr(submission, 'mod_reports_dismissed'):
         for item in submission.mod_reports_dismissed:
             if item[1] is os.environ['REDDIT_USERNAME']:
                 return True
-        return False
-    elif submission.mod_reports[0]:
+    elif submission.mod_reports:
         for item in submission.mod_reports:
             if item[1] is os.environ['REDDIT_USERNAME']:
                 return True
-        return False
-    else:
-        return False
-
-
+    return False
 
 def check_domain(domain):
     # Return True if link domain is in accepted domain list

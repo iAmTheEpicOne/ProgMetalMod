@@ -63,12 +63,14 @@ def check_approved(submission):
 def check_reported(submission):
     if hasattr(submission, 'mod_reports_dismissed'):
         for item in submission.mod_reports_dismissed:
-            if item[1] is os.environ['REDDIT_USERNAME']:
+            if item[1] == os.environ['REDDIT_USERNAME']:
                 return True
-    elif submission.mod_reports:
+    if submission.mod_reports:
         for item in submission.mod_reports:
-            if item[1] is os.environ['REDDIT_USERNAME']:
+            if item[1] == os.environ['REDDIT_USERNAME']:
                 return True
+    # elif submission.num_reports < 0 or submission.ignore_reports is True:
+        # return True
     return False
 
 
@@ -142,6 +144,13 @@ def check_removed(submission):
     # Returns True if submission has been removed
     # Require moderator privileges
     return submission.removed
+
+
+def check_more_recent(submission_1, submission_2):
+    # Returns True if submission_1 is more recent than submission_2
+    age_1 = submission_1.created_utc
+    age_2 = submission_2.created_utc
+    return age_1 > age_2
 
 
 def get_url(submission):
@@ -638,7 +647,7 @@ def check_list(reddit, submission):
         context = "url"
         search_listing = get_reddit_search_listing(reddit, context, query)
         for search_result in search_listing:
-            if not check_archived(search_result) and search_result.id is not submission.id:
+            if not check_archived(search_result) and search_result.id is not submission.id and check_more_recent(submission, search_result):
                 result_url = get_url(search_result)
                 if result_url is post_url:
                     log.info("Url match of \"{}\" and \"{}\"".format(post_url, result_url))
@@ -652,7 +661,7 @@ def check_list(reddit, submission):
             # extraneous request to fix lazy object
             result_url = get_url(search_result)
             if submission.id not in search_result.id:
-                if not check_archived(search_result):
+                if not check_archived(search_result) and check_more_recent(submission, search_result):
                     result_title_split = get_post_title(search_result)
                     if result_title_split[1] is None:
                         result_title = result_title_split[0]

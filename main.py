@@ -8,9 +8,9 @@ import logging
 import logger
 import os
 import pprint
-#import psycopg2
+# import psycopg2
 import boto3
-#import platform
+# import platform
 
 
 # The time in seconds the bot should sleep until it checks again.
@@ -23,6 +23,7 @@ LOG_FILE_MAXSIZE = 1024 * 256
 
 # LOGGING SETUP
 log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
+
 
 # MAIN PROCEDURE
 def run_bot():
@@ -49,16 +50,16 @@ def run_bot():
     # -- last.fm --
 
     # -- postgresql --
-    #DATABASE_URL = os.environ['DATABASE_URL']
-    #conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # DATABASE_URL = os.environ['DATABASE_URL']
+    # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     # -- cloudcube AWS --
-    #s3 = boto3.resource('s3')
+    # s3 = boto3.resource('s3')
 
-    #log.info("Python platform: {}".format(platform.python_version()))
+    # log.info("Python platform: {}".format(platform.python_version()))
     log.info("Starting bot \"{}\" for subreddit {}".format(app_useragent_version, settings.REDDIT_SUBREDDIT))
     interface.unhide_posts(reddit)
-    #log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
-    #stored_posts = interface.initialize_link_array(reddit)
+    # log.info("Gathering posts from subreddit %s", settings.REDDIT_SUBREDDIT)
+    # stored_posts = interface.initialize_link_array(reddit)
     while True:
         try:
             log.info("Reading stream of submissions for subreddit %s", settings.REDDIT_SUBREDDIT)
@@ -68,31 +69,31 @@ def run_bot():
                 # Checks submission against posts from last 6 months
                 # Adds submission to list after both checks
                 if not interface.check_archived(submission) and interface.check_age_days(submission) and not interface.check_reported(submission):
-                    #log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
+                    # log.info("Found new post {} in subreddit {}".format(submission, settings.REDDIT_SUBREDDIT))
                     if interface.check_self(submission):
                         log.info("Found new self Submission: {} in Subreddit: {}".format(submission, settings.REDDIT_SUBREDDIT))
                         interface.check_selfpost(reddit, submission)
                     else:
                         log.info("Found new link Submission: {} in Subreddit: {}".format(submission, settings.REDDIT_SUBREDDIT))
-                        #print(vars(submission))
+                        # print(vars(submission))
                         if not interface.check_embed(submission):
                             # Link submission does not have embeded media information to use for submission checking
                             log.info("Link Submission: {} has no embedded media, will skip".format(submission))
                             continue
                         bool_post = interface.check_submission(reddit, submission)
                         if bool_post:
-                            #interface.check_list(reddit, submission, stored_posts)
+                            # interface.check_list(reddit, submission, stored_posts)
                             interface.check_list(reddit, submission)
-                        #stored_posts.append(submission)
+                        # stored_posts.append(submission)
                         log.info("Checks complete for submission: {}".format(submission))
 
                 # Only checks submission for accurate title/link info
-                #if interface.check_post(submission):
+                # if interface.check_post(submission):
                 #    log.info("Found new post %s in subreddit %s", submission, settings.REDDIT_SUBREDDIT)
                 #    interface.check_submission(reddit, submission)
 
             # Write stored posts to a file
-            #interface.update_stored_posts(reddit, stored_posts)
+            # interface.update_stored_posts(reddit, stored_posts)
 
         # Allows the bot to exit on ^C, all other exceptions are ignored
         except KeyboardInterrupt:
@@ -106,6 +107,7 @@ def run_bot():
                 log.error("Exception in messaging admin: %s", e, exc_info=True)
         log.info("sleep for %s s", SLEEP)
         time.sleep(SLEEP)
+
 
 # START BOT
 if __name__ == "__main__":

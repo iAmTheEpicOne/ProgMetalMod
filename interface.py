@@ -613,8 +613,10 @@ def check_submission(reddit, submission):
         reportBadTitle = False
         link_artist = link_info[0]
         link_song = link_info[1]
-        link_artist_lower = link_artist.lower()
-        link_song_lower = link_song.lower()
+        if link_artist is not None:
+            link_artist_lower = link_artist.lower()
+        if link_song is not None:
+            link_song_lower = link_song.lower()
         post_artist_lower = post_artist.lower()
         post_song_lower = post_song.lower()
         if link_artist is None:

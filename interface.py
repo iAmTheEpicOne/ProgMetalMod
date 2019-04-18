@@ -1,4 +1,3 @@
-import praw
 import prawcore
 import time
 import hashlib
@@ -14,6 +13,8 @@ import os
 import re
 import musicbrainzngs
 import unicodedata
+import pylast
+
 
 log = logging.getLogger("bot")
 # log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
@@ -49,6 +50,14 @@ def check_age_days(submission):
 def check_self(submission):
     # Return True if post is selfpost
     return submission.is_self
+
+
+def check_crosspost(submission):
+    # Return True if post is a crosspost
+    if hasattr(submission, 'crosspost_parent_list'):
+        return True
+    else:
+        return False
 
 
 def check_approved(submission):
@@ -173,6 +182,14 @@ def get_musicbrainz_result(artist, song):
     return result
 
 
+def get_lastfm_result(artist, song):
+    lastfm = pylast.LastFMNetwork(api_key=os.environ['LASTFM_KEY'],
+                                  api_secret=os.environ['LASTFM_SECRET'])
+    results = pylast.TrackSearch(artist, song, lastfm)
+    results = results.get_next_page()
+    return results
+
+
 def get_domain(submission):
     return submission.domain
 
@@ -190,8 +207,8 @@ def get_unicode_normalized(word):
 
 def get_spotify_authorization():
     print("getting spotify authorization")
-    clientID = '65187cdd06e943448e28385cc8cccb17'
-    clientSecret = '10177d7bc7944636ad4083d51e00facc'
+    clientID = os.environ['SPOTIFY_ID']
+    clientSecret = os.environ['SPOTIFY_SECRET']
     authorization = "Basic " + base64.b64encode(bytes(clientID+':'+clientSecret, 'utf-8')).decode()
 
     payload = {'grant_type': 'client_credentials'}
@@ -219,6 +236,19 @@ def get_spotify_track_from_link(trackLink):
     r = requests.get(url, headers=headers)
     rJson = r.json()
     # print(rJson)
+
+
+def get_spotify_track_from_title(artist, track):
+    authorization = get_spotify_authorization
+
+    url = 'https://api.spotify.com/v1/search?q=track:"' + quote(track) + '"+artist:"' + quote(artist) + '"&type=track'
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/json',
+               'Authorization': authorization}
+
+    r = requests.get(url, headers=headers)
+    rJson = r.json()
+    print(rJson)
 
 
 def get_spotify_album_from_link(albumLink):
@@ -314,7 +344,7 @@ def get_link_title(reddit, submission):
         else:
             # Regex
             # title = re.search(r'(?iu)^(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:["].*|(?:\(|\[|{).*[^)]$|[-([].*?(?:full|video|instrumental|review|album|official|premiere?|lyric|playthrough|single|cover|[0-9]{4}).*|$|\n)', link_media_title)
-            title = re.search(r'(?iu)^(.*\S-\S.*|.+?)\s?(?:-{1,2}|\u2014|\u2013|\s(?=["“”]))\s?(?:["“”]|)(\(?[^“"”]*?)\s?(?:["“”].*|\s(?:\(|\[|{).*[^)]$|[-(["“”].*?(?:full|video|instrumental|review|album|official|premiere?|lyric|playthrough|single|cover|version|live|music|[0-9]{4}).*|$|\n)', link_media_title)
+            title = re.search(r'(?iu)^(.*\S-\S.*|.+?)\s?(?:-{1,2}|\u2014|\u2013|\s(?=["“”]))\s?(?:["“”]|)(\(?[^“"”]*?)\s?(?:["“”].*|\s(?:\(|\[|{).*[^)]$|[-(["“”].*?(?:full|audio|video|instrumental|review|album|official|premiere?|lyric|playthrough|single|cover|version|live|music|[0-9]{4}).*|$|\n)', link_media_title)
             if title is None:
                 link_title = [link_media_title, None]
             else:
@@ -339,7 +369,7 @@ def get_post_title(submission):
     # Use regex string in ' ' on regexr.com and check out all the titles it catches!
     # re.search will store 'Artist' in title.group(1) and 'Song' in title.group(2)
     # title = re.search(r'(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))(.*?)\s?(?:-{1,2}|\u2014|\u2013)\s?(?:"|)(\(?[^"]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||["].*|(?:\(|\[|{).*[^)]$|[-([|:;].*?(?:favorite|video|full|tour|premiere?|released|cover|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|official|new|metal|prog|test\spost).*|$|\n)', submission.title)
-    title = re.search(r'(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))([^([]*\S-\S[^([]*|[^([]*?)\s?(?:-{1,2}|\u2014|\u2013|\s(?=[“"”]))\s?(?:[“"”]|)([^“"”]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||[“"”].*|\s(?:[([{]).*[^)\]}]$|(?:[-([|;“"”]|:\s).*?(?:favorite|video|full|tour|live|premiere?|released|cover|version|music|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|for fans of|official|new|metal|prog|recommend|[0-9]{4}).*|$|\n)', submission.title)
+    title = re.search(r'(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))([^([]*\S-\S[^([]*|[^([]*?)\s?(?:-{1,2}|\u2014|\u2013|\s(?=[“"”]))\s?(?:[“"”]|)([^“"”]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||[“"”].*|\s(?:[([{]).*[^)\]}]$|(?:[-([|;“"”]|:\s).*?(?:favorite|audio|video|full|tour|live|premiere?|released|cover|version|music|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|for fans of|official|new|metal|prog|recommend|[0-9]{4}).*|$|\n)', submission.title)
     if title is None:
         # ah fuck it didn't work
         post_title = [get_unicode_normalized(submission).title, None]
@@ -525,6 +555,16 @@ def update_stored_posts(reddit, stored_posts):
             f.write(submission.id + "\n")
 
 
+def merge_crosspost_parent(reddit, submission):
+    # Merge media information from parent into crosspost
+    if hasattr(submission, 'crosspost_parent_list'):
+        parentName = submission.crosspost_parent
+        parentId = parentName[3:]
+        parent = reddit.submission(id=parentId)
+        submission.media = parent.media
+    return submission
+
+
 def check_selfpost(reddit, submission):
     # Check a self.subreddit submission
     if check_lazy_text_post(submission):
@@ -570,43 +610,78 @@ def check_submission(reddit, submission):
         # currently: do nothing
         pass
     else:
+        reportBadTitle = False
         link_artist = link_info[0]
         link_song = link_info[1]
+        link_artist_lower = link_artist.lower()
+        link_song_lower = link_song.lower()
+        post_artist_lower = post_artist.lower()
+        post_song_lower = post_song.lower()
         if link_artist is None:
             # auto-generated YouTube channel "Various Artist - Topic"
             # artist unknown until YouTube API enabled, song is known
-            if link_song.lower() not in post_song.lower() or post_song.lower() not in link_song.lower():
+            if link_song_lower not in post_song_lower or post_song_lower not in link_song_lower:
                 # Report submission for link info not matching post info
-                log.info("Song: \"{}\" does not match Linked Song: \"{}\"".format(post_song, link_song))
-                rule_bad_title_report(reddit, submission)
+                text = "Song: \"{}\" does not match Linked Song: \"{}\""
+                vars = [post_song, link_song]
+                reportBadTitle = True
         elif link_song is None:
             # YouTube video title didn't match regex, so link_artist is full video title
             # Can check post_info against this info
             video_title = link_artist
-            if post_artist.lower() not in video_title.lower() or post_song.lower() not in video_title.lower():
+            if post_artist_lower not in video_title.lower() or post_song_lower not in video_title.lower():
                 # Report submission for artist or song in post title not found in link title
-                log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{}\"".format(post_artist, post_song, video_title))
-                rule_bad_title_report(reddit, submission)
-        elif post_artist.lower() not in link_artist.lower():
-            if link_artist.lower() not in post_artist.lower():
+                text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{}\""
+                vars = [post_artist, post_song, video_title]
+                reportBadTitle = True
+        elif post_artist_lower not in link_artist_lower:
+            if link_artist_lower not in post_artist_lower:
                 try:
                     link_title = submission.media['oembed']['title']
                 except KeyError:
                     link_title = submission.media.oembed.title
-                if post_artist.lower() not in link_title.lower():
+                if post_artist_lower not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title
-                    log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
-                    rule_bad_title_report(reddit, submission)
-        elif post_song.lower() not in link_song.lower():
-            if link_song.lower() not in post_song.lower():
+                    text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
+                    vars = [post_artist, post_song, link_artist, link_song]
+                    reportBadTitle = True
+        elif post_song_lower not in link_song_lower:
+            if link_song_lower not in post_song_lower:
                 try:
                     link_title = submission.media['oembed']['title']
                 except KeyError:
                     link_title = submission.media.oembed.title
-                if post_song.lower() not in link_title.lower():
+                if post_song_lower not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title
-                    log.info("Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\"".format(post_artist, post_song, link_artist, link_song))
-                    rule_bad_title_report(reddit, submission)
+                    text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
+                    vars = [post_artist, post_song, link_artist, link_song]
+                    reportBadTitle = True
+        else:
+            # Get results from last.fm for possible typo-corrected spelling
+            lastfmResults = get_lastfm_result(post_artist, post_song)
+            reportBadTitle = True   # assumed Bad Title now
+            for result in lastfmResults:
+                # Check against search results for possible typo in title
+                # Typos in title will not be reported
+                title = re.search(r'(?iu)^(.*?)\s-\s(.*$)', str(result))
+                artist = title.group(1)
+                song = title.group(2)
+                artist_lower = artist.lower()
+                song_lower = song.lower()
+                if artist_lower in link_artist_lower:
+                    if song_lower in link_song_lower:
+                        reportBadTitle = False
+                elif link_artist_lower in artist_lower:
+                    if link_song_lower in song_lower:
+                        reportBadTitle = False
+                if not reportBadTitle:
+                    break
+            if reportBadTitle:
+                text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
+                vars = [post_artist, post_song, link_artist, link_song]
+    if reportBadTitle:
+        log.info(text.format(*vars))
+        rule_bad_title_report(reddit, submission)
     # mb_result = get_musicbrainz_result(post_artist, post_song)
     # count = mb_result['recording-count']
     # if count < 1:

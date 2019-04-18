@@ -45,10 +45,6 @@ def run_bot():
                                  os.environ['CONTACT_EMAIL'])
     # -- youtube --
 
-    # -- spotify --
-
-    # -- last.fm --
-
     # -- postgresql --
     # DATABASE_URL = os.environ['DATABASE_URL']
     # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -76,6 +72,11 @@ def run_bot():
                     else:
                         log.info("Found new link Submission: {} in Subreddit: {}".format(submission, settings.REDDIT_SUBREDDIT))
                         # print(vars(submission))
+                        if interface.check_crosspost(submission):
+                            # Link submission is a crosspost
+                            # Merge embeded media information from parent into crosspost for checking
+                            log.info("Submission is crosspost; merging media information")
+                            submission = interface.merge_crosspost_parent(reddit, submission)
                         if not interface.check_embed(submission):
                             # Link submission does not have embeded media information to use for submission checking
                             log.info("Link Submission: {} has no embedded media, will skip".format(submission))

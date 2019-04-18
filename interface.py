@@ -13,6 +13,7 @@ import logger
 import os
 import re
 import musicbrainzngs
+import unicodedata
 
 log = logging.getLogger("bot")
 # log_mb = logger.make_logger("musicbrainzngs", LOG_FILENAME, logging_level=logging.DEBUG)
@@ -107,7 +108,7 @@ def check_album_stream(submission):
     if domain in ["youtube.com", "youtu.be", "m.youtube.com"]:
         try:
             title = submission.media['oembed']['title']
-        except:
+        except KeyError:
             title = submission.media.oembed.title
         result = re.search(r'(?i)(full.?album|album.?stream|full.?ep|ep.?stream)', title)
         if result is None:
@@ -174,6 +175,17 @@ def get_musicbrainz_result(artist, song):
 
 def get_domain(submission):
     return submission.domain
+
+
+def get_unicode_normalized(word):
+    try:
+        word.encode(encoding='utf-8').decode('ascii')
+    except UnicodeDecodeError:
+        normalized = unicodedata.normalize('NFD', word)
+        new_word = u"".join([c for c in normalized if not unicodedata.combining(c)])
+        return new_word
+    else:
+        return word
 
 
 def get_spotify_authorization():
@@ -258,7 +270,7 @@ def get_link_title(reddit, submission):
     if domain == "spotify.com":
         try:
             description = submission.media['oembed']['description']
-        except:
+        except KeyError:
             description = submission.media.oembed.description
         # Regex
         title = re.search('(.*), a song by (.*) on Spotify', description)
@@ -268,7 +280,7 @@ def get_link_title(reddit, submission):
     elif domain == "bandcamp.com":
         try:
             description = submission.media['oembed']['title']
-        except:
+        except KeyError:
             description = submission.media.oembed.title
         # Regex
         title = re.search('(.*), by (.*)', description)
@@ -281,7 +293,7 @@ def get_link_title(reddit, submission):
         try:
             link_author = submission.media['oembed']['author_name']
             link_media_title = submission.media['oembed']['title']
-        except:
+        except KeyError:
             link_author = submission.media.oembed.author_name
             link_media_title = submission.media.oembed.title
         if " - Topic" in link_author:
@@ -314,6 +326,11 @@ def get_link_title(reddit, submission):
         link_title = None
     else:
         link_title = None
+    if link_title is not None:
+        if link_title[0] is not None:
+            link_title[0] = get_unicode_normalized(link_title[0])
+        if link_title[1] is not None:
+            link_title[1] = get_unicode_normalized(link_title[1])
     return link_title
 
 
@@ -325,10 +342,10 @@ def get_post_title(submission):
     title = re.search(r'(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))([^([]*\S-\S[^([]*|[^([]*?)\s?(?:-{1,2}|\u2014|\u2013|\s(?=[“"”]))\s?(?:[“"”]|)([^“"”]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||[“"”].*|\s(?:[([{]).*[^)\]}]$|(?:[-([|;“"”]|:\s).*?(?:favorite|video|full|tour|live|premiere?|released|cover|version|music|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|for fans of|official|new|metal|prog|recommend|[0-9]{4}).*|$|\n)', submission.title)
     if title is None:
         # ah fuck it didn't work
-        post_title = [submission.title, None]
+        post_title = [get_unicode_normalized(submission).title, None]
     else:
-        artist = title.group(1)
-        song = title.group(2)
+        artist = get_unicode_normalized(title.group(1))
+        song = get_unicode_normalized(title.group(2))
         post_title = [artist, song]
     return post_title
 
@@ -574,7 +591,7 @@ def check_submission(reddit, submission):
             if link_artist.lower() not in post_artist.lower():
                 try:
                     link_title = submission.media['oembed']['title']
-                except:
+                except KeyError:
                     link_title = submission.media.oembed.title
                 if post_artist.lower() not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title
@@ -584,7 +601,7 @@ def check_submission(reddit, submission):
             if link_song.lower() not in post_song.lower():
                 try:
                     link_title = submission.media['oembed']['title']
-                except:
+                except KeyError:
                     link_title = submission.media.oembed.title
                 if post_song.lower() not in link_title.lower():
                     # Report submission for artist or song in post title not found in link title

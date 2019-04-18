@@ -611,6 +611,8 @@ def check_submission(reddit, submission):
         pass
     else:
         reportBadTitle = False
+        noLinkArtist = False
+        noLinkSong = False
         link_artist = link_info[0]
         link_song = link_info[1]
         if link_artist is not None:
@@ -622,6 +624,7 @@ def check_submission(reddit, submission):
         if link_artist is None:
             # auto-generated YouTube channel "Various Artist - Topic"
             # artist unknown until YouTube API enabled, song is known
+            noLinkArtist = True
             if link_song_lower not in post_song_lower or post_song_lower not in link_song_lower:
                 # Report submission for link info not matching post info
                 text = "Song: \"{}\" does not match Linked Song: \"{}\""
@@ -630,38 +633,37 @@ def check_submission(reddit, submission):
         elif link_song is None:
             # YouTube video title didn't match regex, so link_artist is full video title
             # Can check post_info against this info
+            noLinkSong = True
             video_title = link_artist
             if post_artist_lower not in video_title.lower() or post_song_lower not in video_title.lower():
                 # Report submission for artist or song in post title not found in link title
                 text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{}\""
                 vars = [post_artist, post_song, video_title]
                 reportBadTitle = True
-        elif post_artist_lower not in link_artist_lower:
-            if link_artist_lower not in post_artist_lower:
-                try:
-                    link_title = submission.media['oembed']['title']
-                except KeyError:
-                    link_title = submission.media.oembed.title
-                if post_artist_lower not in link_title.lower():
-                    # Report submission for artist or song in post title not found in link title
-                    text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
-                    vars = [post_artist, post_song, link_artist, link_song]
-                    reportBadTitle = True
-        elif post_song_lower not in link_song_lower:
-            if link_song_lower not in post_song_lower:
-                try:
-                    link_title = submission.media['oembed']['title']
-                except KeyError:
-                    link_title = submission.media.oembed.title
-                if post_song_lower not in link_title.lower():
-                    # Report submission for artist or song in post title not found in link title
-                    text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
-                    vars = [post_artist, post_song, link_artist, link_song]
-                    reportBadTitle = True
-        else:
-            # Get results from last.fm for possible typo-corrected spelling
+        elif post_artist_lower not in link_artist_lower and link_artist_lower not in post_artist_lower:
+            try:
+                link_title = submission.media['oembed']['title']
+            except KeyError:
+                link_title = submission.media.oembed.title
+            if post_artist_lower not in link_title.lower():
+                # Report submission for artist or song in post title not found in link title
+                text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
+                vars = [post_artist, post_song, link_artist, link_song]
+                reportBadTitle = True
+        elif post_song_lower not in link_song_lower and link_song_lower not in post_song_lower:
+            try:
+                link_title = submission.media['oembed']['title']
+            except KeyError:
+                link_title = submission.media.oembed.title
+            if post_song_lower not in link_title.lower():
+                # Report submission for artist or song in post title not found in link title
+                text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
+                vars = [post_artist, post_song, link_artist, link_song]
+                reportBadTitle = True
+        if reportBadTitle:
+            # Title is potentially bad, confirm with typo-correction
+            # Get results from last.fm to compare
             lastfmResults = get_lastfm_result(post_artist, post_song)
-            reportBadTitle = True   # assumed Bad Title now
             for result in lastfmResults:
                 # Check against search results for possible typo in title
                 # Typos in title will not be reported
@@ -670,17 +672,20 @@ def check_submission(reddit, submission):
                 song = title.group(2)
                 artist_lower = artist.lower()
                 song_lower = song.lower()
-                if artist_lower in link_artist_lower:
-                    if song_lower in link_song_lower:
+                if noLinkArtist:
+                    if song_lower in link_song_lower or link_song_lower in song_lower:
                         reportBadTitle = False
-                elif link_artist_lower in artist_lower:
-                    if link_song_lower in song_lower:
+                elif noLinkSong:
+                    video_title_lower = link_artist.lower()
+                    if artist_lower in video_title_lower and song_lower in video_title_lower:
                         reportBadTitle = False
-                if not reportBadTitle:
-                    break
-            if reportBadTitle:
-                text = "Artist: \"{}\" or Song: \"{}\" does not match Title: \"{} -- {}\""
-                vars = [post_artist, post_song, link_artist, link_song]
+                else:
+                    if artist_lower in link_artist_lower and song_lower in link_song_lower:
+                        reportBadTitle = False
+                    elif link_artist_lower in artist_lower and link_song_lower in song_lower:
+                        reportBadTitle = False
+                    if not reportBadTitle:
+                        break
     if reportBadTitle:
         log.info(text.format(*vars))
         rule_bad_title_report(reddit, submission)

@@ -11,7 +11,12 @@ import pprint
 # import psycopg2
 import boto3
 # import platform
+from dotenv import load_dotenv
+from pathlib import Path
 
+# Environment Variables
+env = os.environ
+load_dotenv()
 
 # The time in seconds the bot should sleep until it checks again.
 SLEEP = 600
@@ -27,26 +32,25 @@ log = logger.make_logger("bot", LOG_FILENAME, logging_level=logging.DEBUG)
 
 # MAIN PROCEDURE
 def run_bot():
-
     # -- progmetalbot useragent and version --
-    app_useragent_version = os.environ['APP_USERAGENT'] + ' ' + os.environ['APP_VERSION'] + " by u/" + settings.USER_TO_MESSAGE
+    app_useragent_version = env['APP_USERAGENT'] + ' ' + env['APP_VERSION'] + " by u/" + settings.USER_TO_MESSAGE
     # -- praw --
     reddit = praw.Reddit(user_agent=app_useragent_version,
-                         client_id=os.environ['REDDIT_CLIENT_ID'],
-                         client_secret=os.environ['REDDIT_CLIENT_SECRET'],
-                         password=os.environ['REDDIT_PASSWORD'],
-                         username=os.environ['REDDIT_USERNAME'])
+                         client_id=env['REDDIT_CLIENT_ID'],
+                         client_secret=env['REDDIT_CLIENT_SECRET'],
+                         password=env['REDDIT_PASSWORD'],
+                         username=env['REDDIT_USERNAME'])
     subreddit = reddit.subreddit(settings.REDDIT_SUBREDDIT)
     # -- musicbrainz --
-    musicbrainzngs.auth(os.environ['MUSICBRAINZ_USERNAME'],
-                        os.environ['MUSICBRAINZ_PASSWORD'])
-    musicbrainzngs.set_useragent(os.environ['APP_USERAGENT'],
-                                 os.environ['APP_VERSION'],
-                                 os.environ['CONTACT_EMAIL'])
+    musicbrainzngs.auth(env['MUSICBRAINZ_USERNAME'],
+                        env['MUSICBRAINZ_PASSWORD'])
+    musicbrainzngs.set_useragent(env['APP_USERAGENT'],
+                                 env['APP_VERSION'],
+                                 env['CONTACT_EMAIL'])
     # -- youtube --
 
     # -- postgresql --
-    # DATABASE_URL = os.environ['DATABASE_URL']
+    # DATABASE_URL = env['DATABASE_URL']
     # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     # -- cloudcube AWS --
     # s3 = boto3.resource('s3')

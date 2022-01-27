@@ -12,6 +12,7 @@ musicbrainzngs = "*"
 "psycopg2-binary" = "*"
 boto3 = "*"
 pylast = "*"
+python-dotenv = "*"
 
 [requires]
 python_full_version = "3.10.2"

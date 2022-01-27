@@ -196,7 +196,7 @@ def get_domain(submission):
 
 def get_unicode_normalized(word):
     try:
-        word.encode(encoding='utf-8').decode('ascii')
+        word.encode('utf-8', 'ignore').decode('ascii')
     except UnicodeDecodeError:
         normalized = unicodedata.normalize('NFD', word)
         new_word = u"".join([c for c in normalized if not unicodedata.combining(c)])
@@ -372,7 +372,7 @@ def get_post_title(submission):
     title = re.search(r'(?iu)(?:(?:^[()[\]{}|].*?[()[\]{}|][\s|\W]*)|(?:^))([^([]*\S-\S[^([]*|[^([]*?)\s?(?:-{1,2}|\u2014|\u2013|\s(?=[“"”]))\s?(?:[“"”]|)([^“"”]*?)\s?(?:\/\/.*|\\\\.*|\|\|.*|\|.*\||[“"”].*|\s(?:[([{]).*[^)\]}]$|(?:[-([|;“"”]|:\s).*?(?:favorite|audio|video|full|tour|live|premiere?|released|cover|version|music|album|drum|guitar|bass|vox|vocal|voice|playthrough|ffo|for fans of|official|new|metal|prog|recommend|[0-9]{4}).*|$|\n)', submission.title)
     if title is None:
         # ah fuck it didn't work
-        post_title = [get_unicode_normalized(submission).title, None]
+        post_title = [get_unicode_normalized(submission.title), None]
     else:
         artist = get_unicode_normalized(title.group(1))
         song = get_unicode_normalized(title.group(2))

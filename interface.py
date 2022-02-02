@@ -686,9 +686,9 @@ def check_submission(reddit, submission):
                         reportBadTitle = False
                     if not reportBadTitle:
                         break
-    if reportBadTitle:
-        log.info(text.format(*vars))
-        rule_bad_title_report(reddit, submission)
+        if reportBadTitle:
+            log.info(text.format(*vars))
+            rule_bad_title_report(reddit, submission)
     # mb_result = get_musicbrainz_result(post_artist, post_song)
     # count = mb_result['recording-count']
     # if count < 1:
